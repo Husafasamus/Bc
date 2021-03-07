@@ -64,7 +64,6 @@ class Handler:
         return images
 
     def label_photos(self):
-        #m.create_file(f"{self.path}/labels.json")
 
         #JSON
         data = {}
@@ -74,10 +73,17 @@ class Handler:
         for img in self. getpaths_to_images():
             data['images'].append({
                 'file_name': f'{img}',
-                'isthere': 'true'
+                'height': 640,
+                "width": 640,
+                "bbox": [1, 1, 10, 10],
+                'id': 1
             })
 
         with open(fr'{self.path}/data.json', 'w') as outfile:
             json.dump(data, outfile)
 
         print("Labeling has been finished!")
+
+
+
+
