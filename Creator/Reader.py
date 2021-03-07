@@ -1,26 +1,31 @@
-# Reader bude objekt ktory bude nacitavat datasety a vyuzivat jeho funkcie
-
 import os
 import shutil
 
 
 class FileManager:
 
-    def __init__(self):
-        pass
+    @classmethod
+    def rename(self, src, newName):
+        os.rename(src, newName)
 
-    def renameFile(self, src, newName):
-        os.rename(src, rf'D:\bakalarkaaaa\MOJDATASET\{newName}' )
-
-    def copyAndMoveFile(self, src, dst):
+    @classmethod
+    def copy_move(self, src, dst):
         shutil.copyfile(src, dst)
 
-    def createDir(self, path):
+    @classmethod
+    def create_dir(self, path):
         try:
             os.mkdir(path)
         except FileExistsError:
             print("I cant make this dir, because it is already created or the path is wrong!")
 
+    @classmethod
+    def create_file(self, path):
+        try:
+            with open(path, 'w'):
+                pass
+        except FileExistsError:
+            print("I cant make this nod, because it is already created or the path is wrong!")
 #fm = FileManager()
 #fm.renameFile(r'D:\bakalarkaaaa\MOJDATASET\12.jpg','14.jpg')
 #fm.moveFile('D:/bakalarkaaaa/MOJDATASET/14.jpg','try.jpg')
