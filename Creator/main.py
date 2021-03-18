@@ -1,11 +1,46 @@
 from Creator import Dataset as ds
 from Creator import ObjectDetector as od
+from Creator import OtherDatasets as ods
+
 
 import pathlib
 import json
 import shutil
 
+from scipy.io import loadmat
+import pandas as pd
 
+
+
+unit = ds.Unit(r'D:\bakalarkaaaa\Merget_datasets')
+#ds1 = ds.FakeDataset1(r'D:\bakalarkaaaa\Datasets\Fake_dataset_1')
+#ds1.find_images()
+
+#ssd = od.SSD300()
+
+
+
+ds1 = ods.CarsDataset(r'D:\Downloads\car_ims')
+ds1.find_images()
+
+unit.create_json_from_detections(ds1.get_labels(), ds1.paths_to_images, 'annotations.json')
+
+
+"""pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections').mkdir(exist_ok=True)
+pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections\Fake_dataset_1').mkdir(exist_ok=True)
+p = pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections\Fake_dataset_1\ssd')
+p.mkdir(exist_ok=True)
+p.joinpath('detections.json').touch(exist_ok=True)
+p = pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections\Fake_dataset_1\ssd\detections.json')
+unit.create_json_from_detections(ssd.start(ds1.paths_to_images, 0.4), ds1.paths_to_images,p)"""
+
+"""
+
+
+
+
+# zachovat
+""""""
 unit = ds.Unit(r'D:\bakalarkaaaa\Merget_datasets')
 ds1 = ds.FakeDataset1(r'D:\bakalarkaaaa\Datasets\Fake_dataset_1')
 ds1.find_images()
@@ -20,9 +55,9 @@ p.joinpath('detections.json').touch(exist_ok=True)
 p = pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections\Fake_dataset_1\ssd\detections.json')
 unit.create_json_from_detections(ssd.start(ds1.paths_to_images, 0.4), ds1.paths_to_images,p)
 
+""""""
 
-
-
+"""
 r"""
 path_to_datasets = pathlib.Path(r'D:\bakalarkaaaa\Datasets')
 
@@ -102,4 +137,5 @@ for image_idx in range(len(best_results_per_input)):
         rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='r', facecolor='none')
         ax.add_patch(rect)
         ax.text(x, y, "{} {:.0f}%".format(classes_to_labels[classes[idx] - 1], confidences[idx]*100), bbox=dict(facecolor='white', alpha=0.5))
-plt.show()"""
+plt.show()
+"""

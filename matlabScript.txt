@@ -1,0 +1,9 @@
+
+
+# Converting cars_annos.mat into cars_annos.txt (cars_annos.csv)
+
+FFileData = load('cars_annos.mat');
+s = FFileData.annotations;
+file = fopen('mytxt.txt','w');
+T = struct2table(s,'AsArray',true);
+writetable(T,'cars_annos.txt', 'Delimiter',';');

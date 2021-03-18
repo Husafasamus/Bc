@@ -6,7 +6,7 @@ from typing import Iterable
 
 class BBox:
 
-    def __init__(self, x: float, y: float, w: float, h: float) -> None:
+    def __init__(self, x, y, w, h) -> None:
         """
 
             :param x:

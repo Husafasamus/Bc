@@ -51,6 +51,7 @@ class FakeDataset1(Dataset):
         return data
 
 
+
 """
 
 """
@@ -127,10 +128,11 @@ class Unit:
         """
 
 
-    def create_json_from_detections(self, detections: Detection, imgs: [], path: str) -> None:
+    def create_json_from_detections(self, detections, imgs: [], path: str) -> None:
 
         #if len(detections) != len(imgs):
-        #   return None
+        #    print('x')
+        #    return None
 
         data = {}
         data['content'] = []
@@ -143,15 +145,16 @@ class Unit:
             for annotation in detections[i_img]:
                 data['content'][i_img]['annotations'].append({
                     'bbox': {
-                        'x': annotation.bbox.x,
-                        'y': annotation.bbox.y,
-                        'width': annotation.bbox.w,
-                        'height': annotation.bbox.h
+                        'x': int(annotation.bbox.x),
+                        'y': int(annotation.bbox.y),
+                        'width': int(annotation.bbox.w),
+                        'height': int(annotation.bbox.h)
                     },
                     'label': f'{annotation.label}',
-                    'confidence': annotation.confidence
+                    'confidence': int(annotation.confidence)
                 })
 
+        #print(json.dumps(data, indent=4))
         #print(json.dumps(data, indent=4))
         self.write_to_file(path, data)
        #return json.dumps(data)
