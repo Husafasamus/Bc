@@ -1,29 +1,45 @@
 from Creator import Dataset as ds
-from Creator import ObjectDetector as od
 from Creator import OtherDatasets as ods
 
-
-import pathlib
-import json
-import shutil
-
-from scipy.io import loadmat
-import pandas as pd
+from matplotlib import pyplot as plt
+import matplotlib.image as mpimg
+import matplotlib.patches as patches
 
 
+def plot_img_with_bbox(img: str, x: int, y: int, w: int, h: int) -> None:
+    fig, ax = plt.subplots(1)
+    img = mpimg.imread(img)
+    ax.imshow(img)
+    rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='r', facecolor='none')
+    ax.add_patch(rect)
+    plt.show()
 
-unit = ds.Unit(r'D:\bakalarkaaaa\Merget_datasets')
-#ds1 = ds.FakeDataset1(r'D:\bakalarkaaaa\Datasets\Fake_dataset_1')
+
+
+ds1 = ods.UFPRALPRDataset(r'D:\Downloads\UFPR-ALPR dataset')
+ds1.find_images()
+for x in ds1.get_labels():
+    print(x)
+
+#unit = ds.Unit(r'D:\bakalarkaaaa\Merget_datasets')
+
+#ds1 = ods.CarsDataset(r'D:\Downloads\car_ims')
 #ds1.find_images()
 
-#ssd = od.SSD300()
+#unit.create_json_from_detections(ds1.get_labels(), ds1.paths_to_images, 'annotations.json', indent=4)
 
 
 
-ds1 = ods.CarsDataset(r'D:\Downloads\car_ims')
-ds1.find_images()
+#plot_img_with_bbox(r'D:\Downloads\UFPR-ALPR dataset\testing\track0091\track0091[01].png', 856, 502, 65, 23)
 
-unit.create_json_from_detections(ds1.get_labels(), ds1.paths_to_images, 'annotations.json')
+
+
+
+
+
+
+
+
 
 
 """pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections').mkdir(exist_ok=True)
@@ -35,9 +51,6 @@ p = pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections\Fake_dataset_1\ssd\detect
 unit.create_json_from_detections(ssd.start(ds1.paths_to_images, 0.4), ds1.paths_to_images,p)"""
 
 """
-
-
-
 
 # zachovat
 """"""
@@ -54,40 +67,6 @@ p.mkdir(exist_ok=True)
 p.joinpath('detections.json').touch(exist_ok=True)
 p = pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections\Fake_dataset_1\ssd\detections.json')
 unit.create_json_from_detections(ssd.start(ds1.paths_to_images, 0.4), ds1.paths_to_images,p)
-
-""""""
-
-"""
-r"""
-path_to_datasets = pathlib.Path(r'D:\bakalarkaaaa\Datasets')
-
-pathlib.Path()
-
-
-if not path_to_datasets.exists():
-    exit("Path to datasets does not exists!")
-
-# Vytvorenie priecinku pre mergnuty dataset
-pathlib.Path(r'D:\bakalarkaaaa\Merget_datasets').mkdir(exist_ok=True)
-
-#
-unit = ds.Unit(r'D:\bakalarkaaaa\Merget_datasets')
-
-# Inicializacia datasetov
-ds1 = ds.FakeDataset1(r'D:\bakalarkaaaa\Datasets\Fake_dataset_1')
-ds2 = ds.FakeDataset1(r'D:\bakalarkaaaa\Datasets\Fake_dataset_2')
-
-# Najde si cesty ku fotkam
-ds1.find_images()
-ds2.find_images()
-
-# Provizorne vycuca lable uz vytvoreneho datasetu
-unit.add_labels_from_ds(ds1.get_labels()['content'])
-unit.add_labels_from_ds(ds2.get_labels()['content'])
-
-# Prekopiruje obrazky z datasetu
-unit.copy_imgs_from_ds(ds1)
-unit.copy_imgs_from_ds(ds2)
 
 """
 
