@@ -34,9 +34,12 @@ class CarsDataset(ds.Dataset):
             bboxes_on_picture = [
             od.Annotation(bbox.BBox(int(df['bbox_x1'][img]), df['bbox_y1'][img],df['bbox_x2'][img],df['bbox_y2'][img]), 1.0, 'car')]
             annotations.append(bboxes_on_picture)
+        del df
         return annotations
 
+"""
 
+"""
 
 class UFPRALPRDataset(ds.Dataset):
 
@@ -57,16 +60,48 @@ class UFPRALPRDataset(ds.Dataset):
 
         annotations = []
         for textFile in self.paths_to_annos:
-            annotations.append(self.get_annotation_from_txt_file(textFile))
+            annotations.append(self.get_annotation_from_UFPR_txt_files(textFile))
 
         return annotations
 
-    def get_annotation_from_txt_file(self, path: str):
+    def get_annotation_from_UFPR_txt_files(self, path: str):
         with open(path, 'r') as f:
-            txt = f.readlines()
-            bboxes_on_picture = []
-            bboxes_on_picture.append(od.Annotation(bbox.BBox(int(txt[1].split(' ')[1]), int(txt[1].split(' ')[2]), int(txt[1].split(' ')[3]), int(txt[1].split(' ')[4])), 1.0, txt[2].split(' ')[1].replace('\n', '')))
-            bboxes_on_picture.append(od.Annotation(bbox.BBox(int(txt[7].split(' ')[1]), int(txt[7].split(' ')[2]), int(txt[7].split(' ')[3]), int(txt[7].split(' ')[4])), 1.0, 'license_plate'))
+            #txt = f.readlines()
+            txt = [line.strip() for line in f.readlines()]
+            bboxes_on_picture = [od.Annotation(
+                bbox.BBox(int(txt[1].split(' ')[1]), int(txt[1].split(' ')[2]), int(txt[1].split(' ')[3]),
+                          int(txt[1].split(' ')[4])), 1.0, txt[2].split(' ')[1]), od.Annotation(
+                bbox.BBox(int(txt[7].split(' ')[1]), int(txt[7].split(' ')[2]), int(txt[7].split(' ')[3]),
+                          int(txt[7].split(' ')[4])), 1.0, 'license_plate')]
 
         return bboxes_on_picture
+
+
+
+class ArtificialMercosurLicensePlates(ds.Dataset):
+    """
+    Path: D:\Downloads\nx9xbs4rgx-2
+    License plates dataset
+    """
+    def __init__(self, path: str) -> None:
+        super().__init__(path)
+
+    def find_images(self) -> None:
+        df = pandas.read_csv(self.path.joinpath('dataset.csv'), delimiter=',')
+        self.paths_to_images = [
+           self.path.joinpath('images').joinpath(img) for img in df['image']
+        ]
+        del df
+
+    def get_labels(self) -> Annotations:
+        df = pandas.read_csv(self.path.joinpath('dataset.csv'), delimiter=',')
+        annotations = []
+        for anno in range(len(df)):
+            annotations.append([
+                od.Annotation(bbox.BBox(df['x_center'][anno], df['y_center'][anno], df['width'][anno],
+                                        df['height'][anno]), 1.0, 'license_plate')
+            ])
+        del df
+        return annotations
+
 

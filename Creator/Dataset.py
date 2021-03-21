@@ -51,6 +51,21 @@ class FakeDataset1(Dataset):
         return data
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class Unit:
 
     def __init__(self, path: str) -> None:
@@ -133,10 +148,11 @@ class Unit:
 
         # print(json.dumps(data, indent=4))
         print(json.dumps(data, indent=indent))
-        # self.write_to_file(path, data)
+        #self.write_to_file(path, data, indent=indent)
         #return json.dumps(data)
 
-    def write_to_file(self, path: str, data, indent=0) -> None:
+    @staticmethod
+    def write_to_file(path: str, data, indent=0) -> None:
         with open(path, 'w') as f:
             # f.write(json.dumps(data))
             json.dump(data, f, indent=indent)

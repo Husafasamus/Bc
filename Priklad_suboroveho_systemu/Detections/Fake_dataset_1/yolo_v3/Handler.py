@@ -1,5 +1,5 @@
 from Creator import Dataset as ds
-from Creator.Reader import FileManager as fm
+
 import os
 import json
 
@@ -46,7 +46,7 @@ class Handler:
         self.copy_dataset(self.dataset2, self.path, last_index)
         print("Copy done!")
         print("Labeling has started...")
-        self.label_photos()
+        self.label_images()
 
 
     def copy_dataset(self, ds, path_to_dir, index):
@@ -63,7 +63,7 @@ class Handler:
             images[x] = f"{self.path}/{images[x]}"
         return images
 
-    def label_photos(self):
+    def label_images(self):
 
         #JSON
         data = {}

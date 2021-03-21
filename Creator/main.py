@@ -5,6 +5,8 @@ from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.patches as patches
 
+import pathlib
+
 
 def plot_img_with_bbox(img: str, x: int, y: int, w: int, h: int) -> None:
     fig, ax = plt.subplots(1)
@@ -12,14 +14,26 @@ def plot_img_with_bbox(img: str, x: int, y: int, w: int, h: int) -> None:
     ax.imshow(img)
     rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='r', facecolor='none')
     ax.add_patch(rect)
+    rect = patches.Rectangle((764, 335), 260, 230, linewidth=1, edgecolor='g', facecolor='none')
+    ax.add_patch(rect)
+    # Intersection
+    rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='b', facecolor='blue')
+    ax.add_patch(rect)
     plt.show()
 
 
 
-ds1 = ods.UFPRALPRDataset(r'D:\Downloads\UFPR-ALPR dataset')
-ds1.find_images()
-for x in ds1.get_labels():
-    print(x)
+plot_img_with_bbox(r"D:\Downloads\UFPR-ALPR dataset\testing\track0091\track0091[01].png", 763, 329, 250, 232)
+
+
+
+
+
+
+#ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
+#ds1.find_images()
+#for x in ds1.get_labels():
+  #  print(x)
 
 #unit = ds.Unit(r'D:\bakalarkaaaa\Merget_datasets')
 
@@ -27,12 +41,6 @@ for x in ds1.get_labels():
 #ds1.find_images()
 
 #unit.create_json_from_detections(ds1.get_labels(), ds1.paths_to_images, 'annotations.json', indent=4)
-
-
-
-#plot_img_with_bbox(r'D:\Downloads\UFPR-ALPR dataset\testing\track0091\track0091[01].png', 856, 502, 65, 23)
-
-
 
 
 
