@@ -1,54 +1,110 @@
-from Creator import Dataset as ds
-from Creator import OtherDatasets as ods
+from dataset_merger import dataset as ds
+from dataset_merger import dataset_others as ods
+from dataset_merger import bbox
 
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.patches as patches
-
+import numpy as np
+import numbers
+from typing import Optional
 import pathlib
 
 
-def plot_img_with_bbox(img: str, x: int, y: int, w: int, h: int) -> None:
+def plot_img_with_xywh(img: str, x: int, y: int, w: int, h: int) -> None:
+    fig, ax = plt.subplots(1)
+    img = mpimg.imread(img)
+    ax.imshow(img)
+    rect = patches.Rectangle((x, y), w, h, linewidth=2, edgecolor='r', facecolor='none')
+    ax.add_patch(rect)
+    #   rect = patches.Rectangle((764, 335), 260, 230, linewidth=1, edgecolor='g', facecolor='none')
+    ax.add_patch(rect)
+    # Intersection
+    # rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='b', facecolor='blue')
+    ax.add_patch(rect)
+    plt.show()
+
+
+def plot_img_with_bbox3(img, bbox1: bbox.BBox, bbox2: bbox.BBox, bbox3: bbox.BBox) -> None:
+    x, y, w, h = bbox1.as_xywh()
     fig, ax = plt.subplots(1)
     img = mpimg.imread(img)
     ax.imshow(img)
     rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='r', facecolor='none')
     ax.add_patch(rect)
-    rect = patches.Rectangle((764, 335), 260, 230, linewidth=1, edgecolor='g', facecolor='none')
+    x, y, w, h = bbox2.as_xywh()
+    rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='g', facecolor='none')
     ax.add_patch(rect)
     # Intersection
+
+    x, y, w, h = bbox3.as_xywh()
     rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='b', facecolor='blue')
     ax.add_patch(rect)
     plt.show()
 
 
-
-plot_img_with_bbox(r"D:\Downloads\UFPR-ALPR dataset\testing\track0091\track0091[01].png", 763, 329, 250, 232)
-
-
-
-
-
-
-#ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
-#ds1.find_images()
-#for x in ds1.get_labels():
-  #  print(x)
-
-#unit = ds.Unit(r'D:\bakalarkaaaa\Merget_datasets')
-
-#ds1 = ods.CarsDataset(r'D:\Downloads\car_ims')
-#ds1.find_images()
-
-#unit.create_json_from_detections(ds1.get_labels(), ds1.paths_to_images, 'annotations.json', indent=4)
+def plot_img_with_bbox(img, bbox1: bbox.BBox) -> None:
+    x, y, w, h = bbox1.as_xywh()
+    fig, ax = plt.subplots(1)
+    img = mpimg.imread(img)
+    ax.imshow(img)
+    rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='r', facecolor='none')
+    ax.add_patch(rect)
+    plt.show()
 
 
+from dataset_merger.merging import DatasetMerger
+
+
+def main() -> int:
+    merger = DatasetMerger(r'D:\bakalarkaaaa\Merget_datasets')
+    ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
+    ds1.find_images()
+   # print(len(merger._create_dict_from_annotations(ds1)['content']))
+
+    merger.import_dataset(ds1)
+    #print(pathlib.Path(ds1.paths_to_images))
+
+
+    return 0
+
+def main_alt() -> int:
+    pass
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(main())
+#   sys.exit(main_alt())
 
 
 
 
 
+import cv2
 
+# h, w, _ = cv2.imread(r'D:\Downloads\nx9xbs4rgx-2\images\cropped_parking_lot_1.JPG').shape
+# bbx2 = bbox.BBox.build_from_center_and_size(np.array([int(0.468825*w), int(0.609544*h)]), np.array([int(0.489209*w), int(0.225597*h)]))
+
+# plot_img_with_bbox(r'D:\Downloads\nx9xbs4rgx-2\images\cropped_parking_lot_1.JPG', bbx2)
+# ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
+# ds1.find_images()
+# ds1.get_labels()
+
+# Kordinacie su v v strede a nie top left
+# plot_img_with_xywh(r'D:\Downloads\nx9xbs4rgx-2\images\cropped_parking_lot_1.JPG', int(0.468825*834), int(0.609544*461), int(0.489209*834), int(0.225597*461))
+
+
+unit = ds.Unit(r'D:\bakalarkaaaa\Merget_datasets')
+ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
+ds1.find_images()
+# ds1.get_labels()
+
+# print(ds1.paths_to_images[0])
+# print(type(ds1.paths_to_images[0]))
+
+# print(type(r'D:\Downloads\nx9xbs4rgx-2\images\cropped_parking_lot_1.JPG'))
+unit.create_json_from_detections(ds1.get_labels(), ds1.paths_to_images, '', indent=4)
 
 """pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections').mkdir(exist_ok=True)
 pathlib.Path(r'D:\bakalarkaaaa\Datasets\Detections\Fake_dataset_1').mkdir(exist_ok=True)

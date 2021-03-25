@@ -87,3 +87,36 @@ class BBox:
         x, y = self.center - self.size // 2
         width, height = self.size
         return f'{self.__class__.__name__}({x},{y},{width},{height})'
+
+
+    """
+    What I added.
+    """
+    @staticmethod
+    def intersection_of_bboxes(bbx1, bbx2) -> Optional['BBox']:
+
+        bb1_top_left, bb1_bot_right = bbx1.as_tl_br()
+        bb2_top_left, bb2_bot_right = bbx2.as_tl_br()
+
+        new_top_left = (max(bb2_top_left[0], bb1_top_left[0]), max(bb2_top_left[1], bb1_top_left[1]))
+        new_bot_right = (min(bb1_bot_right[0], bb2_bot_right[0]), min(bb1_bot_right[1], bb2_bot_right[1]))
+
+        if not (new_top_left[0] >= new_bot_right[0] or new_top_left[1] >= new_bot_right[1]):
+            return BBox(new_top_left[0], new_top_left[1], new_bot_right[0] - new_top_left[0],
+                        new_bot_right[1] - new_top_left[1])
+        return False
+
+
+    @staticmethod
+    def intersection_of_list_bboxes(bboxes) -> Optional['BBox']:
+        if len(bboxes) == 1:
+            return bboxes[0]
+        elif len(bboxes) == 0:
+            return False
+
+        bbox1 = bboxes[0]
+        for bbox in bboxes[1:]:
+            bbox1 = BBox.intersection_of_bboxes(bbox1, bbox)
+            if not bbox1:
+                return False
+        return bbox1

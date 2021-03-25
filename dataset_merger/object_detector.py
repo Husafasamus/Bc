@@ -1,16 +1,12 @@
 import torch
 
-from Creator import bbox
+from dataset_merger.bbox import BBox
 from typing import Iterable
 
 
 class Annotation:
 
-    """
-    Labels -> [bicycle, car, motorcycle, bus, truck]
-    """
-
-    def __init__(self, bbox: bbox.BBox, confidence: float, label: str) -> None:
+    def __init__(self, bbox: BBox, confidence: float, label: str) -> None:
         self.bbox, self.confidence, self.label = bbox, confidence, label
 
     def build_dictionary(self) -> dict:
@@ -73,7 +69,7 @@ class SSD300:
                 left, bot, right, top = bboxes[idx]
                 x, y, w, h = [val * 300 for val in [left, bot, right - left, top - bot]]
                 bboxes_on_picture.append \
-                    (Annotation(bbox.BBox(x, y, w, h), confidences[idx] * 100,
+                    (Annotation(BBox(x, y, w, h), confidences[idx] * 100,
                                 self.classes_to_labels[classes[idx] - 1]))
             annotations.append(bboxes_on_picture)
         return annotations
