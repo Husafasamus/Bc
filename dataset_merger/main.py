@@ -58,12 +58,11 @@ from dataset_merger.merging import DatasetMerger
 
 def main() -> int:
     merger = DatasetMerger(r'D:\bakalarkaaaa\Merget_datasets')
-    ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
-    ds1.find_images()
-   # print(len(merger._create_dict_from_annotations(ds1)['content']))
+    #ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
+    #ds1.find_images()
 
-    merger.import_dataset(ds1)
-    #print(pathlib.Path(ds1.paths_to_images))
+    #merger.import_dataset(ds1)
+    merger.split_train_test_validation()
 
 
     return 0

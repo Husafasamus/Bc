@@ -1,4 +1,4 @@
-from Creator import Dataset as ds
+from dataset_merger import dataset as ds
 
 import os
 import json

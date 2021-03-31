@@ -104,7 +104,7 @@ class BBox:
         if not (new_top_left[0] >= new_bot_right[0] or new_top_left[1] >= new_bot_right[1]):
             return BBox(new_top_left[0], new_top_left[1], new_bot_right[0] - new_top_left[0],
                         new_bot_right[1] - new_top_left[1])
-        return False
+        return None
 
 
     @staticmethod
