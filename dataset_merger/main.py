@@ -57,7 +57,7 @@ from dataset_merger.merging import DatasetMerger
 
 
 def main() -> int:
-    merger = DatasetMerger(r'D:\bakalarkaaaa\Merget_datasets')
+    merger = DatasetMerger(r'D:\bakalarkaaaa\Merged_datasets')
     #ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
     #ds1.find_images()
 
