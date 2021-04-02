@@ -9,7 +9,8 @@ import numpy as np
 import numbers
 from typing import Optional
 import pathlib
-
+from PIL import Image
+import time
 
 def plot_img_with_xywh(img: str, x: int, y: int, w: int, h: int) -> None:
     fig, ax = plt.subplots(1)
@@ -58,12 +59,14 @@ from dataset_merger.merging import DatasetMerger
 
 def main() -> int:
     merger = DatasetMerger(r'D:\bakalarkaaaa\Merged_datasets')
-    #ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
-    #ds1.find_images()
+    ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
+    ds1.find_images()
 
-    #merger.import_dataset(ds1)
-    merger.split_train_test_validation()
-
+    t0 = time.time()
+    merger.import_dataset(ds1)
+    t1 = time.time() - t0
+    # merger.split_train_test_validation()
+    print(f"Time elapsed: {t1}")
 
     return 0
 
@@ -72,6 +75,7 @@ def main_alt() -> int:
 
 if __name__ == "__main__":
     import sys
+
 
     sys.exit(main())
 #   sys.exit(main_alt())

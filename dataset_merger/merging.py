@@ -1,5 +1,6 @@
 from typing import Optional, Tuple
 from pathlib import Path, PurePosixPath
+from PIL import Image
 import csv
 import pandas
 import shutil
@@ -106,8 +107,9 @@ class DatasetMerger:
         last_file_copy = last_file  # For annotations
         # 2. copy images from dataset
         for img_path in new_dataset.imgs_path:
-            shutil.copy(img_path, self.destination_path.joinpath('images')
-                        .joinpath(f'{last_file}{PurePosixPath(img_path.name).suffix}'))
+            with Image.open(img_path) as img:
+                img.convert('RGB'). \
+                    save(f"{self.destination_path.joinpath('images').joinpath(f'{last_file:05d}.jpg')}")
             last_file += 1
 
         # Cez pillow ak je png tak jpg a zmenit format 00001.jpg 5 miest
@@ -120,7 +122,7 @@ class DatasetMerger:
         last_file = last_file_copy
         data_annotations = self.create_dict_from_annotations(new_dataset)
         for num in range(len(data_annotations['content'])):
-            data_annotations['content'][num]['file_name'] = f'{last_file}.jpg'
+            data_annotations['content'][num]['file_name'] = f'{last_file:05d}.jpg'
             last_file += 1
 
         # detections json path

@@ -95,14 +95,14 @@ class ArtificialMercosurLicensePlates(Dataset):
     def get_labels(self) -> 'Annotations':
         df = pandas.read_csv(self.path.joinpath('dataset.csv'), delimiter=',')
         annotations = []
-        for annotations in range(len(df)):
+        for index_annotations in range(len(df)):
             # h, w, _ = cv2.imread(str(self.paths_to_images[anno])).shape
-            with Image.open(str(self.imgs_path[annotations]), 'r') as img:
+            with Image.open(str(self.imgs_path[index_annotations]), 'r') as img:
                 w, h = img.size
             annotations.append([
                 od.Annotation(BBox.build_from_center_and_size(
-                    np.array([int(df['x_center'][annotations] * w), int(df['y_center'][annotations] * h)]),
-                    np.array([int(df['width'][annotations] * w), int(df['height'][annotations] * h)])),
+                    np.array([int(df['x_center'][index_annotations] * w), int(df['y_center'][index_annotations] * h)]),
+                    np.array([int(df['width'][index_annotations] * w), int(df['height'][index_annotations] * h)])),
                     1.0, 'license_plate')
             ])
         del df
