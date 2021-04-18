@@ -112,8 +112,6 @@ class DatasetMerger:
                     save(f"{self.destination_path.joinpath('images').joinpath(f'{last_file:05d}.jpg')}")
             last_file += 1
 
-        # Cez pillow ak je png tak jpg a zmenit format 00001.jpg 5 miest
-
         # 3. Copy annotations
         #   - read annotations get labels()
         #   - append to new merged labels
@@ -155,15 +153,15 @@ class DatasetMerger:
               into images again and split it again.
         -> (True, True): images with train, test, validation
         """
-        tmp_imgs = False
-        tmp_train = False
+        imgs = False
+        train = False
         for inside in self.destination_path.iterdir():
             if inside.name == 'images':
-                tmp_imgs = True
+                imgs = True
         for inside in self.destination_path.iterdir():
             if inside.name == 'train':
-                tmp_train = True
-        return tmp_imgs, tmp_train
+                train = True
+        return imgs, train
 
     def split_train_test_validation(self, train_size=.6, test_size=.2, validation_size=.2) -> None:
         # Check if train, test, validation sizing is correct
@@ -177,7 +175,7 @@ class DatasetMerger:
         # If ds include images dir
         if is_imgs == (True, False):
             print('images in!')
-            self._split_train_test_validation(train_size, test_size, validation_size)
+            self._split_train_test_validation(train_size, test_size)
         elif is_imgs == (True, True):
             # Create imgs dir
             # Recopy all images from train, test and validation images into images dir and then split it again
@@ -205,7 +203,6 @@ class DatasetMerger:
 
         # Shuffle imgs_list
         random.shuffle(imgs_list)
-        print(imgs_list)
         # Copy into train dir
         train_path = self.destination_path.joinpath('train')
         train_path.mkdir()

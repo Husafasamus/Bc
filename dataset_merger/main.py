@@ -58,15 +58,43 @@ from dataset_merger.merging import DatasetMerger
 
 
 def main() -> int:
-    merger = DatasetMerger(r'D:\bakalarkaaaa\Merged_datasets')
-    ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
+    #merger = DatasetMerger(r'D:\bakalarkaaaa\Merged_datasets')
+    #ds1 = ods.ArtificialMercosurLicensePlates(r'D:\Downloads\nx9xbs4rgx-2')
+    #ds1.find_images()
+
+    #t0 = time.time()
+    #merger.import_dataset(ds1)
+    #merger.split_train_test_validation()
+    #t1 = time.time() - t0
+
+
+    ds1 = ods.UFPRALPRDataset(r"D:\Downloads\UFPR-ALPR dataset")
     ds1.find_images()
 
-    t0 = time.time()
-    merger.import_dataset(ds1)
-    t1 = time.time() - t0
-    # merger.split_train_test_validation()
-    print(f"Time elapsed: {t1}")
+    dest = pathlib.Path(r'C:\Users\soky5\Desktop\try')
+
+    for img_index in range(len(ds1.imgs_path)):
+        with Image.open(ds1.imgs_path[img_index]) as img:
+            img.convert('RGB'). \
+                save(f"{dest.joinpath(f'{img_index:05d}.jpg')}")
+        with Image.open(str(ds1.imgs_path[img_index]), 'r') as img:
+            w, h = img.size
+        annot = ods.UFPRALPRDataset.get_annotation_from_ufpr_txt_files(ds1.annotations_path[img_index])
+        with open(dest.joinpath(f'{img_index:05d}.txt'), "w") as write:
+            write.write(f"0 {annot[1].bbox.center[0]/w} {annot[1].bbox.center[1]/h} {annot[1].bbox.size[0]/w} {annot[1].bbox.size[1]/h}")
+
+
+
+
+
+
+
+
+
+
+
+
+    #print(f"Time elapsed: {t1}")
 
     return 0
 
