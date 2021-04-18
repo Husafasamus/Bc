@@ -2,6 +2,10 @@ import torch
 
 from dataset_merger.bbox import BBox
 from typing import Iterable
+from dataset_merger.dataset import *
+from object_detectors.yolov3 import *
+from object_detectors.yolov3  import detect
+from dataset_merger.merging import DatasetMerger
 
 
 class Annotation:
@@ -28,9 +32,52 @@ class Annotation:
 
 class ObjectDetector:
     """
-    This class do somethign awesome, but not yet.
+    This class do something awesome, but not yet.
+    Funkcionalita:
+    1.
+
     """
-    pass
+    @staticmethod
+    def create_files(dataset: Dataset, detector: str) -> None:
+        path_dst = dataset.path.joinpath('Our_detections')
+        path_dst.mkdir(exist_ok=True)
+        path_dst = path_dst.joinpath(detector)
+        path_dst.mkdir(exist_ok=True)
+        path_dst.joinpath('detections.json').touch(exist_ok=True)
+
+    @staticmethod
+    def yolov3_vehicle_detector(dataset: Dataset):
+        print('Yolov3 vehicle detector.')
+        ObjectDetector.create_files(dataset, 'yolov3')
+        annos = detect.detect_vehicles_in_dataset(dataset.path)
+
+        annos = DatasetMerger.create_dict_from_annotations_detected(dataset, annos)
+        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('yolov3').joinpath('detections.json'), annos, 4)
+
+
+        pass
+
+    @staticmethod
+    def yolov3_LPN_detector(dataset: Dataset):
+        print('Yolov3 LPN detector.')
+        ObjectDetector.create_files(dataset, 'yolov3')
+        pass
+
+    @staticmethod
+    def SSD_vehicle_detector(dataset: Dataset):
+        print('SSD vehicle detector.')
+        ObjectDetector.create_files(dataset, 'ssd')
+        pass
+
+    @staticmethod
+    def SSD_vehicle_detector(dataset: Dataset):
+        print('SSD LPN detector.')
+        ObjectDetector.create_files(dataset, 'ssd')
+
+        pass
+
+
+
 
 
 Annotations = list[list[Annotation]]

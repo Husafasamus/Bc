@@ -64,6 +64,23 @@ class DatasetMerger:
 
         return data
 
+    @staticmethod
+    def create_dict_from_annotations_detected(dataset: Dataset, annos) -> dict:
+        data = {'content': []}
+        imgs = dataset.imgs_path
+        annotations = annos
+
+        for i_img in range(len(imgs)):
+            data['content'].append({
+                'file_name': f'{Path(imgs[i_img]).name}',
+                'annotations': []
+            })
+            for annotation in annotations[i_img]:
+                data['content'][i_img]['annotations'].append(annotation.build_dictionary())
+
+        return data
+
+
     def is_ds_inside(self, dataset: Dataset) -> bool:
         wsi = pandas.read_csv(self.wsi_path)
         for name in wsi["dataset_name"]:

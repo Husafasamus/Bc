@@ -1,6 +1,7 @@
 from dataset_merger import dataset as ds
 from dataset_merger import dataset_others as ods
 from dataset_merger import bbox
+from dataset_merger.object_detector import *
 
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
@@ -25,7 +26,6 @@ def plot_img_with_xywh(img: str, x: int, y: int, w: int, h: int) -> None:
     ax.add_patch(rect)
     plt.show()
 
-
 def plot_img_with_bbox3(img, bbox1: bbox.BBox, bbox2: bbox.BBox, bbox3: bbox.BBox) -> None:
     x, y, w, h = bbox1.as_xywh()
     fig, ax = plt.subplots(1)
@@ -42,7 +42,6 @@ def plot_img_with_bbox3(img, bbox1: bbox.BBox, bbox2: bbox.BBox, bbox3: bbox.BBo
     rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='b', facecolor='blue')
     ax.add_patch(rect)
     plt.show()
-
 
 def plot_img_with_bbox(img, bbox1: bbox.BBox) -> None:
     x, y, w, h = bbox1.as_xywh()
@@ -67,34 +66,13 @@ def main() -> int:
     #merger.split_train_test_validation()
     #t1 = time.time() - t0
 
+    d = ds.FakeDataset2(r'D:\bakalarkaaaa\Datasets\Fake_dataset_2')
+    d.find_images()
+    print(d.get_labels())
 
-    ds1 = ods.UFPRALPRDataset(r"D:\Downloads\UFPR-ALPR dataset")
-    ds1.find_images()
-
-    dest = pathlib.Path(r'C:\Users\soky5\Desktop\try')
-
-    for img_index in range(len(ds1.imgs_path)):
-        with Image.open(ds1.imgs_path[img_index]) as img:
-            img.convert('RGB'). \
-                save(f"{dest.joinpath(f'{img_index:05d}.jpg')}")
-        with Image.open(str(ds1.imgs_path[img_index]), 'r') as img:
-            w, h = img.size
-        annot = ods.UFPRALPRDataset.get_annotation_from_ufpr_txt_files(ds1.annotations_path[img_index])
-        with open(dest.joinpath(f'{img_index:05d}.txt'), "w") as write:
-            write.write(f"0 {annot[1].bbox.center[0]/w} {annot[1].bbox.center[1]/h} {annot[1].bbox.size[0]/w} {annot[1].bbox.size[1]/h}")
+    ObjectDetector.yolov3_vehicle_detector(d)
 
 
-
-
-
-
-
-
-
-
-
-
-    #print(f"Time elapsed: {t1}")
 
     return 0
 
@@ -108,8 +86,21 @@ if __name__ == "__main__":
     sys.exit(main())
 #   sys.exit(main_alt())
 
+#ds1 = ods.UFPRALPRDataset(r"D:\Downloads\UFPR-ALPR dataset")
+    #ds1.find_images()
 
+    #dest = pathlib.Path(r'C:\Users\soky5\Desktop\try')
+    #for img_index in range(len(ds1.imgs_path)):
+     #   with Image.open(ds1.imgs_path[img_index]) as img:
+      #      img.convert('RGB'). \
+       #         save(f"{dest.joinpath(f'{img_index:05d}.jpg')}")
+        #with Image.open(str(ds1.imgs_path[img_index]), 'r') as img:
+         #   w, h = img.size
+        #annot = ods.UFPRALPRDataset.get_annotation_from_ufpr_txt_files(ds1.annotations_path[img_index])
+        #with open(dest.joinpath(f'{img_index:05d}.txt'), "w") as write:
+         #   write.write(f"0 {annot[1].bbox.center[0]/w} {annot[1].bbox.center[1]/h} {annot[1].bbox.size[0]/w} {annot[1].bbox.size[1]/h}")
 
+    #print(f"Time elapsed: {t1}")
 
 
 import cv2
