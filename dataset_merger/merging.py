@@ -31,6 +31,76 @@ class DatasetMerger:
         self.create_wsi(self.wsi_path)  # csv
 
     @staticmethod
+    def compare_detections(dataset: Dataset):
+        """
+        Dataset: yolov3 -> detections.json
+                 ssd    -> detections.json
+        Vlastnosti, ktore treba zohladnit:
+            1. Confidence
+            2. Rozdiel toho ako sa lisia dva bboxy
+
+        TO DO:
+        1. Najst cesty k detections
+        2. Nacitat jsony
+        3. Loop v jsone a nacitanie obrazkov
+        4. Vytvorit funkciu, na porovnanie annotacii v jednom obrazku
+
+        """
+        # Paths to detections.json, for each detector
+        detections_yolov3_path = dataset.path.joinpath('Our_detections').joinpath('yolov3').joinpath('detections.json')
+        detections_ssd_path = dataset.path.joinpath('Our_detections').joinpath('ssd').joinpath('detections.json')
+
+        # Load jsons
+        with open(detections_yolov3_path) as file:
+            detection_yolov3 = json.load(file)
+
+        with open(detections_ssd_path) as file:
+            detection_ssd = json.load(file)
+
+        # Loop in json and load separate imgs
+        for index in range(len(detection_yolov3['content'])):
+
+            #img annotations
+            img_yolov3 = detection_yolov3['content'][index]
+            img_ssd = detection_ssd['content'][index]
+
+            # Compare 'license_plate' labels
+            # Lists of lpn annotations
+            list_yolov3_lpn = []
+            list_ssd_lpn = []
+
+            # List of vehicle annotations
+            list_yolov3_vehicle = []
+            list_ssd_vehicle = []
+
+            # yolov3 check
+            for index_annotation in range(len(img_yolov3['annotations'])):
+                # Check if img contains 'license_plate' else add to vehicle list
+                if img_yolov3['annotations'][index_annotation]['label'] == 'license_plate':
+                    list_yolov3_lpn.append(img_yolov3['annotations'][index_annotation])
+                else:
+                    list_yolov3_vehicle.append(img_yolov3['annotations'][index_annotation])
+
+            # ssd check
+            for index_annotation in range(len(img_ssd['annotations'])):
+                # Check if img contains 'license_plate' else add to vehicle list
+                if img_ssd['annotations'][index_annotation]['label'] == 'license_plate':
+                    list_ssd_lpn.append(img_ssd['annotations'][index_annotation])
+                else:
+                    list_ssd_vehicle.append(img_ssd['annotations'][index_annotation])
+
+
+
+
+
+
+
+        pass
+
+
+
+
+    @staticmethod
     def create_wsi(path_to: str) -> bool:
         if Path(path_to).exists():
             return False

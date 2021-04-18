@@ -68,10 +68,11 @@ def main() -> int:
 
     d = ds.FakeDataset2(r'D:\bakalarkaaaa\Datasets\Fake_dataset_2')
     d.find_images()
-    print(d.get_labels())
 
-    ObjectDetector.yolov3_vehicle_detector(d)
+    DatasetMerger.compare_detections(d)
 
+    #ObjectDetector.yolov3_vehicle_detector(d)
+    #ObjectDetector.SSD_vehicle_detector(d)
 
 
     return 0

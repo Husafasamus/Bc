@@ -67,12 +67,18 @@ class ObjectDetector:
     def SSD_vehicle_detector(dataset: Dataset):
         print('SSD vehicle detector.')
         ObjectDetector.create_files(dataset, 'ssd')
+        annos = SSD300()
+        annos = annos.start(dataset.imgs_path, 0.8)
+        annos = DatasetMerger.create_dict_from_annotations_detected(dataset, annos)
+
+        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('ssd').joinpath('detections.json'), annos, 4)
         pass
 
     @staticmethod
-    def SSD_vehicle_detector(dataset: Dataset):
+    def SSD_LPN_detector(dataset: Dataset):
         print('SSD LPN detector.')
         ObjectDetector.create_files(dataset, 'ssd')
+
 
         pass
 
@@ -116,7 +122,6 @@ class SSD300:
                 left, bot, right, top = bboxes[idx]
                 x, y, w, h = [val * 300 for val in [left, bot, right - left, top - bot]]
                 bboxes_on_picture.append \
-                    (Annotation(BBox(x, y, w, h), confidences[idx] * 100,
-                                self.classes_to_labels[classes[idx] - 1]))
+                    (Annotation(BBox(int(x), int(y), int(w), int(h)), confidences[idx] * 100, self.classes_to_labels[classes[idx] - 1]))
             annotations.append(bboxes_on_picture)
         return annotations
