@@ -89,6 +89,8 @@ class BBox:
         return f'{self.__class__.__name__}({x},{y},{width},{height})'
 
     """What I added."""
+    def capacity(self) -> float:
+        return self._size[0] * self._size[1]
 
     @staticmethod
     def intersection(bbx1, bbx2) -> Optional['BBox']:

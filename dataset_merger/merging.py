@@ -6,8 +6,11 @@ import pandas
 import shutil
 import json
 import random
-
+import statistics
 from dataset_merger.dataset import Dataset
+from dataset_merger.bbox import BBox
+#from dataset_merger.object_detector import Annotation
+from dataset_merger import object_detector
 
 """
 
@@ -44,11 +47,15 @@ class DatasetMerger:
         2. Nacitat jsony
         3. Loop v jsone a nacitanie obrazkov
         4. Vytvorit funkciu, na porovnanie annotacii v jednom obrazku
+        5.
 
         """
         # Paths to detections.json, for each detector
         detections_yolov3_path = dataset.path.joinpath('Our_detections').joinpath('yolov3').joinpath('detections.json')
         detections_ssd_path = dataset.path.joinpath('Our_detections').joinpath('ssd').joinpath('detections.json')
+
+        data_manual = {'content': []}
+        data_completed = {'content': []}
 
         # Load jsons
         with open(detections_yolov3_path) as file:
@@ -89,12 +96,95 @@ class DatasetMerger:
                 else:
                     list_ssd_vehicle.append(img_ssd['annotations'][index_annotation])
 
+            # Funkcia, ktora mi prehodnoti detekovane anotacie na obrazku
+            """
+                Kedy, by sa mala anotacia uchovat?
+                Kedy, by sa mala anotacia odstranit?
+                Kedy, by  sa mal obrazok prehodnotit a vlozit do separatneho priecinku?
+            """
+
+            #print('yolo',list_yolov3_vehicle)
+            #print('ssd',list_ssd_vehicle)
+
+            # Lists of new annotations
+            new_vehicle_annotations = []
+            new_lpn_annotations = []
+
+            new_vehicle_manual_annotations = []
+
+            # Cyklus ktory porovna kazde jedno auto s druhym
+            for vehicle_yolo in list_yolov3_vehicle:
+                bbox_yolo = BBox(vehicle_yolo['bbox']['x'], vehicle_yolo['bbox']['y'], vehicle_yolo['bbox']['width'], vehicle_yolo['bbox']['height'])
+
+                for vehicle_ssd in list_ssd_vehicle:
+                    bbox_ssd = BBox(vehicle_ssd['bbox']['x'], vehicle_ssd['bbox']['y'], vehicle_ssd['bbox']['width'], vehicle_ssd['bbox']['height'])
+
+                    # Check if intersection in bboxes does exist
+                    bbox_intersection = BBox.intersection(bbox_yolo, bbox_ssd)
+                    if bbox_intersection is not None:
+                        print('Intersection in: ', vehicle_yolo, vehicle_ssd)
+                        # Check for difference in confidences
+                        capacity_yolo = bbox_yolo.capacity()
+                        capacity_ssd = bbox_ssd.capacity()
+                        capacity_intersection = bbox_intersection.capacity()
+
+                        if (capacity_intersection / capacity_yolo) > 0.6 or (capacity_intersection / capacity_ssd) > 0.6: # Check if the annotations does annotate same object
+
+                            if vehicle_yolo['confidence'] > 0.8 and vehicle_ssd['confidence'] > 0.8: # Check if confidences are above 0.8
+
+                                if abs(vehicle_yolo['confidence'] - vehicle_ssd['confidence']) <= 0.05: # Check difference in confidences
+                                    # If yes, rescale it to bigger annotation
+                                    bbox_intersection.rescale(1.2, 1.2)
+                                    new_vehicle_annotations.append(object_detector.Annotation(bbox_intersection, statistics.mean([vehicle_yolo['confidence'], vehicle_ssd['confidence']]), vehicle_yolo['label']))
+                                    break
+                                    # --> Final annotation
+                                else:
+                                    # If not, check for confidences, find max confidence from two of them and rescale to 1.1
+                                    if vehicle_yolo['confidence'] > vehicle_ssd['confidence']:
+
+                                        bbox_yolo.rescale(1.1, 1.1)
+                                        new_vehicle_annotations.append(object_detector.Annotation(bbox_yolo,vehicle_yolo['confidence'], vehicle_yolo['label']))
+                                        break
+                                        # --> Final annotation
+                                    else:
+                                        bbox_ssd.rescale(1.1, 1.1)
+                                        new_vehicle_annotations.append(object_detector.Annotation(bbox_ssd, vehicle_ssd['confidence'], vehicle_ssd['label']))
+                                        break
+                                        # --> Final annotation
+                            else:
+                                # If confidences is less, then 0.8
+                                # maybe nothing
+                                # add to manual detection !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                                new_vehicle_manual_annotations.append(object_detector.Annotation(bbox_ssd, vehicle_ssd['confidence'], vehicle_ssd['label']))
+                                new_vehicle_manual_annotations.append(object_detector.Annotation(bbox_yolo,vehicle_yolo['confidence'], vehicle_yolo['label']))
+                                pass
+                        else:
+                            # Annotations probably does not annotate same object currently
+                            continue
+                    else:
+                        # Intersection does not exists
+                        continue
+                        pass
+
+                    pass
+
+                pass
 
 
 
 
+            print('manual: ', new_vehicle_manual_annotations)
+            print('good: ', new_vehicle_annotations)
+
+            if len(new_vehicle_manual_annotations) > 0:
+                # Tak zapis do json detections ktore treba opravit a nasledne si ich pouzivatel otvori v label toole
+                data_manual['content'].append(detection_yolov3['content'][index])
+            else:
+                pass
 
 
+
+        # LPN check
         pass
 
 

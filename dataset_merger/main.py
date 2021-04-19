@@ -1,7 +1,7 @@
 from dataset_merger import dataset as ds
 from dataset_merger import dataset_others as ods
 from dataset_merger import bbox
-from dataset_merger.object_detector import *
+#from dataset_merger.object_detector import *
 
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
@@ -12,6 +12,7 @@ from typing import Optional
 import pathlib
 from PIL import Image
 import time
+import statistics
 
 def plot_img_with_xywh(img: str, x: int, y: int, w: int, h: int) -> None:
     fig, ax = plt.subplots(1)
@@ -68,6 +69,8 @@ def main() -> int:
 
     d = ds.FakeDataset2(r'D:\bakalarkaaaa\Datasets\Fake_dataset_2')
     d.find_images()
+    #print(bbox.BBox(1,2,10,10).capacity())
+
 
     DatasetMerger.compare_detections(d)
 
