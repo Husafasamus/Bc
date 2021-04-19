@@ -55,6 +55,7 @@ class DatasetMerger:
         detections_ssd_path = dataset.path.joinpath('Our_detections').joinpath('ssd').joinpath('detections.json')
 
         data_manual = {'content': []}
+        index_manual = 0
         data_completed = {'content': []}
         index_completed = 0
 
@@ -157,8 +158,8 @@ class DatasetMerger:
                                 # If confidences is less, then 0.8
                                 # maybe nothing
                                 # add to manual detection !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-                                new_vehicle_manual_annotations.append(object_detector.Annotation(bbox_ssd, vehicle_ssd['confidence'], vehicle_ssd['label']))
-                                new_vehicle_manual_annotations.append(object_detector.Annotation(bbox_yolo,vehicle_yolo['confidence'], vehicle_yolo['label']))
+                                #new_vehicle_manual_annotations.append(object_detector.Annotation(bbox_ssd, vehicle_ssd['confidence'], vehicle_ssd['label']))
+                                #new_vehicle_manual_annotations.append(object_detector.Annotation(bbox_yolo,vehicle_yolo['confidence'], vehicle_yolo['label']))
                                 pass
                         else:
                             # Annotations probably does not annotate same object currently
@@ -181,6 +182,9 @@ class DatasetMerger:
             if len(new_vehicle_manual_annotations) > 0 or len(new_vehicle_annotations) == 0:
                 # Tak zapis do json detections ktore treba opravit a nasledne si ich pouzivatel otvori v label toole
                 data_manual['content'].append(detection_yolov3['content'][index])
+                for annos in img_ssd['annotations']:
+                    data_manual['content'][index_manual]['annotations'].append(annos)
+                index_manual += 1
             else:
                 # add to completed annotations
                 img_name = detection_yolov3['content'][index]['file_name']
