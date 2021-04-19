@@ -56,6 +56,7 @@ class DatasetMerger:
 
         data_manual = {'content': []}
         data_completed = {'content': []}
+        index_completed = 0
 
         # Load jsons
         with open(detections_yolov3_path) as file:
@@ -121,8 +122,9 @@ class DatasetMerger:
 
                     # Check if intersection in bboxes does exist
                     bbox_intersection = BBox.intersection(bbox_yolo, bbox_ssd)
+
                     if bbox_intersection is not None:
-                        print('Intersection in: ', vehicle_yolo, vehicle_ssd)
+                        #print('Intersection in: ', vehicle_yolo, vehicle_ssd)
                         # Check for difference in confidences
                         capacity_yolo = bbox_yolo.capacity()
                         capacity_ssd = bbox_ssd.capacity()
@@ -134,7 +136,7 @@ class DatasetMerger:
 
                                 if abs(vehicle_yolo['confidence'] - vehicle_ssd['confidence']) <= 0.05: # Check difference in confidences
                                     # If yes, rescale it to bigger annotation
-                                    bbox_intersection.rescale(1.2, 1.2)
+                                    bbox_intersection.rescale(1.1, 1.1)
                                     new_vehicle_annotations.append(object_detector.Annotation(bbox_intersection, statistics.mean([vehicle_yolo['confidence'], vehicle_ssd['confidence']]), vehicle_yolo['label']))
                                     break
                                     # --> Final annotation
@@ -170,21 +172,35 @@ class DatasetMerger:
 
                 pass
 
+            # LPN check?
 
 
+            #print('manual: ', new_vehicle_manual_annotations)
+            #print('good: ', new_vehicle_annotations)
 
-            print('manual: ', new_vehicle_manual_annotations)
-            print('good: ', new_vehicle_annotations)
-
-            if len(new_vehicle_manual_annotations) > 0:
+            if len(new_vehicle_manual_annotations) > 0 or len(new_vehicle_annotations) == 0:
                 # Tak zapis do json detections ktore treba opravit a nasledne si ich pouzivatel otvori v label toole
                 data_manual['content'].append(detection_yolov3['content'][index])
             else:
-                pass
+                # add to completed annotations
+                img_name = detection_yolov3['content'][index]['file_name']
+
+                data_completed['content'].append(
+                {
+                            'file_name': f'{img_name}',
+                            'annotations': []
+                })
+                for annos in new_vehicle_annotations:
+                    data_completed['content'][index_completed]['annotations'].append(annos.build_dictionary())
+                index_completed += 1
 
 
 
-        # LPN check
+        print('completed', data_completed)
+        print('manual', data_manual)
+        DatasetMerger.file_write('completed.json', data_completed, indent=4)
+        DatasetMerger.file_write('manual.json', data_manual, indent=4)
+
         pass
 
 
