@@ -95,8 +95,10 @@ class DatasetMerger:
         # Images done
         imgs_done = {'content': []}
 
+        index_done = 0
+
         for index_img in range(len(detections_all['content'])):
-            result = DatasetMerger.compare_annotations_in_img(detections_all['content'][index_img]) # Result None as manual annotations or Annotations for successfull annotation
+            result = DatasetMerger.compare_annotations_in_img(detections_all['content'][index_img], confidence_treshold, difference_in_confidence, bbox_perc_intersection) # Result None as manual annotations or Annotations for successfull annotation
             if result is None:
                 imgs_manual.append(detections_all['content'][index_img])
                 continue
@@ -107,7 +109,8 @@ class DatasetMerger:
                 'annotations': []
             })
             for anno in result:
-                imgs_done['content'][index_img]['annotations'].append(anno.build_dictionary())
+                imgs_done['content'][index_done]['annotations'].append(anno.build_dictionary())
+            index_done += 1
 
         del detections_all
 
@@ -118,8 +121,9 @@ class DatasetMerger:
 
         for img_detection in imgs_manual:
             manual_data['content'].append(img_detection)
+            pass
 
-       # DatasetMerger.file_write('detections.json', manual_data, indent=4)
+        #DatasetMerger.file_write('detections.json', manual_data, indent=4)
         DatasetMerger.file_write('detections.json', imgs_done, indent=4)
 
         pass
@@ -166,7 +170,10 @@ class DatasetMerger:
         for x, y in itertools.combinations(range(len(vehicles)), 2):
             if not x in added:
                 if not y in added:
-                    index, result = DatasetMerger.compare_two_annotations(vehicles[x], vehicles[y]) # If none is for manual annotations
+                    index, result = DatasetMerger.compare_two_annotations(vehicles[x], vehicles[y], confidence_treshold, difference_in_confidence, bbox_perc_intersection) # If none is for manual annotations
+
+                    if index == -1:
+                        continue
                     if result is None:
                         return None
 
@@ -193,7 +200,7 @@ class DatasetMerger:
         if bbox_i is not None:
             bbox_1_c, bbox_2_c, bbox_i_c  = bbox_1.capacity(), bbox_2.capacity(), bbox_i.capacity()
 
-            if bbox_i_c / bbox_1_c > bbox_perc_intersection or bbox_i_c / bbox_2_c > bbox_perc_intersection:
+            if bbox_i_c / bbox_1_c > bbox_perc_intersection or bbox_i_c / bbox_2_c > bbox_perc_intersection: # Maybe I will change this one
                 del bbox_1_c, bbox_2_c, bbox_i_c
 
                 if annotation1['confidence'] > confidence_treshold and annotation2['confidence'] > confidence_treshold:
@@ -208,7 +215,7 @@ class DatasetMerger:
                         bbox_2.rescale(1.1, 1.1)
                         return 2, object_detector.Annotation(bbox_2, annotation2['confidence'], annotation2['label'])
 
-        return 0, None
+        return -1, None
 
     @staticmethod
     def compare_detections(dataset: Dataset):

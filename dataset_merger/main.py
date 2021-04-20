@@ -71,7 +71,7 @@ def main() -> int:
     d.find_images()
     #print(bbox.BBox(1,2,10,10).capacity())
 
-    DatasetMerger.compare_detections_n(d)
+    DatasetMerger.compare_detections_n(d, bbox_perc_intersection=0.8)
     #DatasetMerger.compare_detections(d)
 
     #ObjectDetector.yolov3_vehicle_detector(d)
