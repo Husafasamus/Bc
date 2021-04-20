@@ -93,22 +93,34 @@ class DatasetMerger:
         # Images for manual annotation
         imgs_manual = []
         # Images done
-        imgs_done = []
+        imgs_done = {'content': []}
 
-        for img in detections_all['content']:
-            result = DatasetMerger.compare_annotations_in_img(img) # Result None as manual annotations or Annotations for successfull annotation
+        for index_img in range(len(detections_all['content'])):
+            result = DatasetMerger.compare_annotations_in_img(detections_all['content'][index_img]) # Result None as manual annotations or Annotations for successfull annotation
             if result is None:
-                imgs_manual.append(img)
+                imgs_manual.append(detections_all['content'][index_img])
                 continue
-            imgs_done.append(img)
+
+            file_name = detections_all['content'][index_img]['file_name']
+            imgs_done['content'].append({
+                'file_name': f'{file_name}',
+                'annotations': []
+            })
+            for anno in result:
+                imgs_done['content'][index_img]['annotations'].append(anno.build_dictionary())
 
         del detections_all
+
         print('manual', imgs_manual)
         print('done', imgs_done)
         manual_data = {'content': []}
+        done_data = {'content': []}
+
         for img_detection in imgs_manual:
             manual_data['content'].append(img_detection)
-        DatasetMerger.file_write('detections.json', manual_data, indent=4)
+
+       # DatasetMerger.file_write('detections.json', manual_data, indent=4)
+        DatasetMerger.file_write('detections.json', imgs_done, indent=4)
 
         pass
 
@@ -143,8 +155,15 @@ class DatasetMerger:
         added = []
         successful_annotations = []
 
-        for x, y in itertools.combinations(range(len(vehicles)), 2):
+        if len(vehicles) == 1:
+            if vehicles[0]['confidence'] >  confidence_treshold:
+                bbox_ = BBox(vehicles[0]['bbox']['x'], vehicles[0]['bbox']['y'], vehicles[0]['bbox']['width'],
+                              vehicles[0]['bbox']['height'])
+                successful_annotations.append(object_detector.Annotation(bbox_, vehicles[0]['label'], vehicles[0]['confidence']))
+            else:
+                return None
 
+        for x, y in itertools.combinations(range(len(vehicles)), 2):
             if not x in added:
                 if not y in added:
                     index, result = DatasetMerger.compare_two_annotations(vehicles[x], vehicles[y]) # If none is for manual annotations
@@ -155,10 +174,13 @@ class DatasetMerger:
                     if index == 3:
                         added.append(x)
                         added.append(y)
-                    if index == 1:
+                    elif index == 1:
                         added.append(x)
                     else:
                         added.append(y)
+
+        del added
+        return successful_annotations
 
 
 
@@ -177,7 +199,7 @@ class DatasetMerger:
                 if annotation1['confidence'] > confidence_treshold and annotation2['confidence'] > confidence_treshold:
                     if abs(annotation1['confidence'] - annotation2['confidence']) <= difference_in_confidence:
                         bbox_i.rescale(1.1, 1.1)
-                        return 3, bbox_i
+                        return 3, object_detector.Annotation(bbox_i, min(annotation1['confidence'], annotation2['confidence']), annotation1['label'])
                 else:
                     if annotation1['confidence'] > annotation2['confidence']:
                         bbox_1.rescale(1.1, 1.1)
