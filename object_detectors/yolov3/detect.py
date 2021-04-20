@@ -38,89 +38,92 @@ import matplotlib.patches as patches
 from matplotlib.ticker import NullLocator
 
 
+class YoloV3:
 
-def detect_vehicles_in_dataset(path) -> 'Annotations':
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = Darknet(r"D:\bakalarkaaaa\object_detectors\yolov3\config\yolov3.cfg", img_size=416).to(device)
-    model.load_darknet_weights(r"D:\bakalarkaaaa\object_detectors\yolov3\weights\yolov3.weights")
+    @staticmethod
+    def detect_vehicles_in_dataset(path, img_size=416, conf_thres=0.8, nms_thres=0.4) -> 'Annotations':
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        model = Darknet(r"D:\bakalarkaaaa\object_detectors\yolov3\config\yolov3.cfg", img_size=img_size).to(device)
+        model.load_darknet_weights(r"D:\bakalarkaaaa\object_detectors\yolov3\weights\yolov3.weights")
 
-    model.eval()  # Set in evaluation mode
+        model.eval()  # Set in evaluation mode
 
-    dataloader = DataLoader(
-        ImageFolder(path, transform= \
-            transforms.Compose([DEFAULT_TRANSFORMS, Resize(416)])),
-        batch_size=1,
-        shuffle=False,
-        num_workers=0, # Mozna zmena!
-    )
+        dataloader = DataLoader(
+            ImageFolder(path, transform= \
+                transforms.Compose([DEFAULT_TRANSFORMS, Resize(img_size)])),
+            batch_size=1,
+            shuffle=False,
+            num_workers=0, # Mozna zmena!
+        )
 
-    classes = load_classes(r"D:\bakalarkaaaa\object_detectors\yolov3\data\coco.names")  # Extracts class labels from file
+        classes = load_classes(r"D:\bakalarkaaaa\object_detectors\yolov3\data\coco.names")  # Extracts class labels from file
 
-    Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+        Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
-    imgs = []  # Stores image paths
-    img_detections = []  # Stores detections for each image index
+        imgs = []  # Stores image paths
+        img_detections = []  # Stores detections for each image index
 
-    print("\nPerforming object detection:")
-    prev_time = time.time()
-    for batch_i, (img_paths, input_imgs) in enumerate(dataloader):
-        # Configure input
-        input_imgs = Variable(input_imgs.type(Tensor))
+        print("\nPerforming object detection:")
+        prev_time = time.time()
+        for batch_i, (img_paths, input_imgs) in enumerate(dataloader):
+            # Configure input
+            input_imgs = Variable(input_imgs.type(Tensor))
 
-        # Get detections
-        with torch.no_grad():
-            detections = model(input_imgs)
-            detections = non_max_suppression(detections, 0.7, 0.4)
+            # Get detections
+            with torch.no_grad():
+                detections = model(input_imgs)
+                detections = non_max_suppression(detections, conf_thres, nms_thres)
 
-        # Log progress
-        current_time = time.time()
-        inference_time = datetime.timedelta(seconds=current_time - prev_time)
-        prev_time = current_time
-        print("\t+ Batch %d, Inference Time: %s" % (batch_i, inference_time))
+            # Log progress
+            current_time = time.time()
+            inference_time = datetime.timedelta(seconds=current_time - prev_time)
+            prev_time = current_time
+            print("\t+ Batch %d, Inference Time: %s" % (batch_i, inference_time))
 
-        # Save image and detections
-        imgs.extend(img_paths)
-        img_detections.extend(detections)
+            # Save image and detections
+            imgs.extend(img_paths)
+            img_detections.extend(detections)
 
-    # Bounding-box colors
-    cmap = plt.get_cmap("tab20b")
-    colors = [cmap(i) for i in np.linspace(0, 1, 20)]
+        # Bounding-box colors
+        cmap = plt.get_cmap("tab20b")
+        colors = [cmap(i) for i in np.linspace(0, 1, 20)]
 
-    annotations = []
+        annotations = []
 
-    for img_i, (path, detections) in enumerate(zip(imgs, img_detections)):
-        print("(%d) Image: '%s'" % (img_i, path))
+        for img_i, (path, detections) in enumerate(zip(imgs, img_detections)):
+            print("(%d) Image: '%s'" % (img_i, path))
 
-        # Create plot
-        img = np.array(Image.open(path))
+            # Create plot
+            img = np.array(Image.open(path))
 
-        if detections is not None:
-            # Rescale boxes to original image
-            detections = rescale_boxes(detections, 416, img.shape[:2])
-            unique_labels = detections[:, -1].cpu().unique()
-            n_cls_preds = len(unique_labels)
-            bbox_colors = random.sample(colors, n_cls_preds)
-            # print(detections)
-            bboxes_on_picture = []
-            for x1, y1, x2, y2, conf, cls_pred in detections:
+            if detections is not None:
+                # Rescale boxes to original image
+                detections = rescale_boxes(detections, img_size, img.shape[:2])
+                unique_labels = detections[:, -1].cpu().unique()
+                n_cls_preds = len(unique_labels)
+                bbox_colors = random.sample(colors, n_cls_preds)
+                # print(detections)
+                bboxes_on_picture = []
+                for x1, y1, x2, y2, conf, cls_pred in detections:
 
-                box_w = x2 - x1
-                box_h = y2 - y1
+                    box_w = x2 - x1
+                    box_h = y2 - y1
 
-                confirm_labels = ['car', 'truck', 'motorcycle', 'bus']
-                if classes[int(cls_pred)]  in confirm_labels:
-                    bboxes_on_picture.append(object_detector.Annotation(BBox(int(x1), int(y1), int(box_w), int(box_h)), conf.item(),
-                                                                  classes[int(cls_pred)]))
+                    confirm_labels = ['car', 'truck', 'motorcycle', 'bus']
+                    if classes[int(cls_pred)]  in confirm_labels:
+                        bboxes_on_picture.append(object_detector.Annotation(BBox(int(x1), int(y1), int(box_w), int(box_h)), conf.item(),
+                                                                      classes[int(cls_pred)]))
 
-            annotations.append(bboxes_on_picture)
+                annotations.append(bboxes_on_picture)
 
 
-    return annotations
+        return annotations
 
-    pass
+        pass
 
-def detect_LPN_in_dataset(paths) -> 'Annotations':
-    pass
+    @staticmethod
+    def detect_LPN_in_dataset(path, img_size=416, conf_thres=0.8, nms_thres=0.4) -> 'Annotations':
+        pass
 
 
 if __name__ == "__main__":

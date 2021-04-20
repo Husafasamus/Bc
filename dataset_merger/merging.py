@@ -33,6 +33,63 @@ class DatasetMerger:
         self.destination_path.joinpath('annotations').mkdir(exist_ok=True)  # dir
         self.create_wsi(self.wsi_path)  # csv
 
+
+    @staticmethod
+    def compare_detections_n(dataset: Dataset) -> None:
+        """
+        Work: Load annotations from detections
+        Note: Every object detector has its own directory with detections.json
+        detections_json_from_detectors path for each detector dir.
+        """
+        detections_json_from_detectors = []
+        for detections in dataset.path.joinpath('Our_detections').iterdir():
+            if detections.name != 'Our_detections' or detections.name != 'detections.json':
+                detections_json_from_detectors.append(detections.joinpath('detections.json'))
+
+        # Check if annotations exists
+        if len(detections_json_from_detectors) == 0:
+            return None
+
+        """
+        Work: Load jsons to lists 
+        Note: Variable list will contain annotations from each 
+              detector.
+        detections_detectors: each index contains detections from one detector
+        """
+        detections_detectors = []
+
+        for path_json in detections_json_from_detectors:
+            with open(path_json) as detections:
+                detections_detectors.append(json.load(detections))
+
+        """
+        Work: Create dictionary, where each img will contain annotations from every detector
+        Note: Variable dict, will contain every annotations
+        detections_all:
+        """
+        detections_all = {'content': []}
+
+        # Append every img_file to detections_all
+        for index_img in range(len(dataset.imgs_path)):
+            detections_all['content'].append({
+                'file_name': f"{dataset.imgs_path[index_img].name}",
+                'annotations': []
+            })
+            for index_detector in range(len(detections_detectors)):
+                for index_detection in range(len(detections_detectors[index_detector]['content'])):
+                    if dataset.imgs_path[index_img].name == detections_detectors[index_detector]['content'][index_detection]['file_name']:
+                        for index_annotation in range(len(detections_detectors[index_detector]['content'][index_detection]['annotations'])):
+                            detections_all['content'][index_img]['annotations'].append(detections_detectors[index_detector]['content'][index_detection]['annotations'][index_annotation])
+
+        # Del. garbage
+        del detections_json_from_detectors
+        del detections_detectors
+
+
+
+
+        pass
+
     @staticmethod
     def compare_detections(dataset: Dataset):
         """
@@ -51,6 +108,7 @@ class DatasetMerger:
 
         """
         # Paths to detections.json, for each detector
+        # Paths will be detected automatically
         detections_yolov3_path = dataset.path.joinpath('Our_detections').joinpath('yolov3').joinpath('detections.json')
         detections_ssd_path = dataset.path.joinpath('Our_detections').joinpath('ssd').joinpath('detections.json')
 
