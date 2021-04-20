@@ -11,6 +11,7 @@ from dataset_merger.dataset import Dataset
 from dataset_merger.bbox import BBox
 #from dataset_merger.object_detector import Annotation
 from dataset_merger import object_detector
+import itertools
 
 """
 
@@ -35,7 +36,7 @@ class DatasetMerger:
 
 
     @staticmethod
-    def compare_detections_n(dataset: Dataset) -> None:
+    def compare_detections_n(dataset: Dataset, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6) -> None:
         """
         Work: Load annotations from detections
         Note: Every object detector has its own directory with detections.json
@@ -81,14 +82,111 @@ class DatasetMerger:
                         for index_annotation in range(len(detections_detectors[index_detector]['content'][index_detection]['annotations'])):
                             detections_all['content'][index_img]['annotations'].append(detections_detectors[index_detector]['content'][index_detection]['annotations'][index_annotation])
 
-        # Del. garbage
+        # Delete garbage
         del detections_json_from_detectors
         del detections_detectors
 
+        """
+        Work: Compare annotations in one separate img
+        Note: 
+        """
+        # Images for manual annotation
+        imgs_manual = []
+        # Images done
+        imgs_done = []
 
+        for img in detections_all['content']:
+            result = DatasetMerger.compare_annotations_in_img(img) # Result None as manual annotations or Annotations for successfull annotation
+            if result is None:
+                imgs_manual.append(img)
+                continue
+            imgs_done.append(img)
 
+        del detections_all
+        print('manual', imgs_manual)
+        print('done', imgs_done)
+        manual_data = {'content': []}
+        for img_detection in imgs_manual:
+            manual_data['content'].append(img_detection)
+        DatasetMerger.file_write('detections.json', manual_data, indent=4)
 
         pass
+
+    @staticmethod
+    def compare_annotations_in_img(img_detection: dict, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6) -> 'Annotations':
+        """
+        Work: Separate vehicles and lpns
+        Note:
+        vehicles
+        lpns
+        """
+        vehicles = []
+        lpns = []
+
+        for index_annotation in range(len(img_detection['annotations'])):
+            # Check if img contains 'license_plate' else add to vehicle list
+            if img_detection['annotations'][index_annotation]['label'] == 'license_plate':
+                lpns.append(img_detection['annotations'][index_annotation])
+            else:
+                vehicles.append(img_detection['annotations'][index_annotation])
+
+        # If img does not contain vehicles, img is automaticaly added to manual annotation list
+        if len(vehicles) == 0:
+            return None # None for manual annotations or I return new annotations
+
+        """
+        Work: Compare vehicles
+        Note:
+        result successful Annotations
+        """
+        # index, which were added
+        added = []
+        successful_annotations = []
+
+        for x, y in itertools.combinations(range(len(vehicles)), 2):
+
+            if not x in added:
+                if not y in added:
+                    index, result = DatasetMerger.compare_two_annotations(vehicles[x], vehicles[y]) # If none is for manual annotations
+                    if result is None:
+                        return None
+
+                    successful_annotations.append(result)
+                    if index == 3:
+                        added.append(x)
+                        added.append(y)
+                    if index == 1:
+                        added.append(x)
+                    else:
+                        added.append(y)
+
+
+
+    @staticmethod
+    def compare_two_annotations(annotation1: dict, annotation2: dict, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6):
+        bbox_1 = BBox(annotation1['bbox']['x'], annotation1['bbox']['y'], annotation1['bbox']['width'], annotation1['bbox']['height'])
+        bbox_2 = BBox(annotation2['bbox']['x'], annotation2['bbox']['y'], annotation2['bbox']['width'], annotation2['bbox']['height'])
+        bbox_i = BBox.intersection(bbox_1, bbox_2)
+
+        if bbox_i is not None:
+            bbox_1_c, bbox_2_c, bbox_i_c  = bbox_1.capacity(), bbox_2.capacity(), bbox_i.capacity()
+
+            if bbox_i_c / bbox_1_c > bbox_perc_intersection or bbox_i_c / bbox_2_c > bbox_perc_intersection:
+                del bbox_1_c, bbox_2_c, bbox_i_c
+
+                if annotation1['confidence'] > confidence_treshold and annotation2['confidence'] > confidence_treshold:
+                    if abs(annotation1['confidence'] - annotation2['confidence']) <= difference_in_confidence:
+                        bbox_i.rescale(1.1, 1.1)
+                        return 3, bbox_i
+                else:
+                    if annotation1['confidence'] > annotation2['confidence']:
+                        bbox_1.rescale(1.1, 1.1)
+                        return 1, object_detector.Annotation(bbox_1, annotation1['confidence'], annotation1['label'])
+                    else:
+                        bbox_2.rescale(1.1, 1.1)
+                        return 2, object_detector.Annotation(bbox_2, annotation2['confidence'], annotation2['label'])
+
+        return 0, None
 
     @staticmethod
     def compare_detections(dataset: Dataset):
