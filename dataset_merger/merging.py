@@ -147,8 +147,8 @@ class DatasetMerger:
                 vehicles.append(img_detection['annotations'][index_annotation])
 
         # If img does not contain vehicles, img is automaticaly added to manual annotation list
-        if len(vehicles) == 0:
-            return None # None for manual annotations or I return new annotations
+        #if len(vehicles) == 0:
+        #    return None # None for manual annotations or I return new annotations
 
         """
         Work: Compare vehicles
@@ -157,37 +157,94 @@ class DatasetMerger:
         """
         # index, which were added
         added = []
-        successful_annotations = []
+        successful_annotations_vehicles = []
 
         if len(vehicles) == 1:
             if vehicles[0]['confidence'] >  confidence_treshold:
                 bbox_ = BBox(vehicles[0]['bbox']['x'], vehicles[0]['bbox']['y'], vehicles[0]['bbox']['width'],
                               vehicles[0]['bbox']['height'])
-                successful_annotations.append(object_detector.Annotation(bbox_, vehicles[0]['label'], vehicles[0]['confidence']))
+                successful_annotations_vehicles.append(object_detector.Annotation(bbox_, vehicles[0]['label'], vehicles[0]['confidence']))
             else:
                 return None
+        else:
+            for x, y in itertools.combinations(range(len(vehicles)), 2):
+                if not x in added:
+                    if not y in added:
+                        index, result = DatasetMerger.compare_two_annotations(vehicles[x], vehicles[y], confidence_treshold, difference_in_confidence, bbox_perc_intersection) # If none is for manual annotations
 
-        for x, y in itertools.combinations(range(len(vehicles)), 2):
-            if not x in added:
-                if not y in added:
-                    index, result = DatasetMerger.compare_two_annotations(vehicles[x], vehicles[y], confidence_treshold, difference_in_confidence, bbox_perc_intersection) # If none is for manual annotations
+                        if index == -1:
+                            continue
+                        if result is None:
+                            return None
 
-                    if index == -1:
-                        continue
-                    if result is None:
-                        return None
+                        successful_annotations_vehicles.append(result)
+                        if index == 3:
+                            added.append(x)
+                            added.append(y)
+                        elif index == 1:
+                            added.append(x)
+                        else:
+                            added.append(y)
 
-                    successful_annotations.append(result)
-                    if index == 3:
-                        added.append(x)
-                        added.append(y)
-                    elif index == 1:
-                        added.append(x)
-                    else:
-                        added.append(y)
+            del added
+        #return successful_annotations
 
-        del added
-        return successful_annotations
+        """
+        Work: Compare LPNs
+        Note: 
+        """
+        added = []
+        successful_annotations_lpns = []
+
+        if len(lpns) == 1:
+            if lpns[0]['confidence'] >  confidence_treshold:
+                bbox_ = BBox(lpns[0]['bbox']['x'], lpns[0]['bbox']['y'], lpns[0]['bbox']['width'],
+                              lpns[0]['bbox']['height'])
+                successful_annotations_lpns.append(object_detector.Annotation(bbox_, lpns[0]['label'], lpns[0]['confidence']))
+        else:
+            for x, y in itertools.combinations(range(len(lpns)), 2):
+                if not x in added:
+                    if not y in added:
+                        index, result = DatasetMerger.compare_two_annotations(lpns[x], lpns[y], confidence_treshold, difference_in_confidence, bbox_perc_intersection) # If none is for manual annotations
+
+                        if index == -1:
+                            continue
+                        if result is None:
+                            continue
+                            #return None # -----------------------?-----------------------------
+
+                        successful_annotations_lpns.append(result)
+                        if index == 3:
+                            added.append(x)
+                            added.append(y)
+                        elif index == 1:
+                            added.append(x)
+                        else:
+                            added.append(y)
+
+            del added
+
+        """
+        Work: Detect LPNs on vehicles.
+        Note: LPN should be in the detected vehicle.
+              LPN can't be without vehicle 
+        append to successful_annotations_vehicles for return
+        """
+        #
+
+        for lpn_detection in successful_annotations_lpns:
+            bbox_lpn = lpn_detection.bbox
+
+            for vehicle_detection in successful_annotations_vehicles:
+                bbox_vehicle = vehicle_detection.bbox
+                bbox_i = BBox.intersection(bbox_lpn, bbox_vehicle)
+                if bbox_i.capacity() / bbox_lpn.capacity() > 0.9:
+                    successful_annotations_vehicles.append(lpn_detection)
+                    break
+
+        return successful_annotations_vehicles
+
+
 
 
 
