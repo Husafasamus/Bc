@@ -87,8 +87,7 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
             result = DatasetMerger.compare_detections_n(dataset, confidence_treshold=conf_act_step,
                                                bbox_perc_intersection=intersection_act_step)
             intersection_act_step += intersection_step
-            data[index_conf_step][index_inters_step] = result[0] # 0 - Count of imgs manual, 1 - done imgs
-            c_imgs = result[0] + result[1]
+            data[index_conf_step][index_inters_step] = result[0]/ (result[0] + result[1])# 0 - Count of imgs manual, 1 - done imgs
 
         intersection_act_step = intersection_from
         conf_act_step += conf_step
@@ -99,6 +98,8 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
     # Create 2D - Heat map
     fig, ax = plt.subplots()
     im = ax.imshow(data_np)
+    fig.colorbar(im, ax=ax, label='Ratio')
+
 
     # We want to show all ticks...
     ax.set_xticks(np.arange(len(intersections)))
@@ -107,11 +108,14 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
     ax.set_xticklabels(intersections)
     ax.set_yticklabels(confidences)
 
+
     # Rotate the tick labels and set their alignment.
     plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
             rotation_mode="anchor")
     plt.xlabel('Intersection')
     plt.ylabel('Confidence')
+
+
 
     # Loop over data dimensions and create text annotations.
     for i in range(len(confidences)):
@@ -120,12 +124,11 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
                          ha="center", va="center", color="w")
 
 
-    ax.set_title(f"Počet obrázkov potrebných manuálne anotovať\nz celk. počtu {c_imgs} v závislosti od confidence a intersection")
+    ax.set_title(f"Relatívny počet obrázkov, potrebných manuálne anotovať\nv závislosti od confidence a intersection")
 
     fig.tight_layout()
 
     plt.show()
-
 
 
 
