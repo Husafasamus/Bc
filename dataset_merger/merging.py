@@ -250,9 +250,10 @@ class DatasetMerger:
             for vehicle_detection in successful_annotations_vehicles:
                 bbox_vehicle = vehicle_detection.bbox
                 bbox_i = BBox.intersection(bbox_lpn, bbox_vehicle)
-                if bbox_i.capacity() / bbox_lpn.capacity() > 0.9:   # Define number, which define us when the bounding boxe is in another
-                    successful_annotations_vehicles.append(lpn_detection)
-                    break
+                if bbox_i is not None:
+                    if bbox_i.capacity() / bbox_lpn.capacity() > 0.9:   # Define number, which define us when the bounding boxe is in another
+                        successful_annotations_vehicles.append(lpn_detection)
+                        break
 
         return successful_annotations_vehicles
 

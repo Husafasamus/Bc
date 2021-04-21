@@ -87,7 +87,7 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
             result = DatasetMerger.compare_detections_n(dataset, confidence_treshold=conf_act_step,
                                                bbox_perc_intersection=intersection_act_step)
             intersection_act_step += intersection_step
-            data[index_conf_step][index_inters_step] = result[0]/ (result[0] + result[1])# 0 - Count of imgs manual, 1 - done imgs
+            data[index_conf_step][index_inters_step] = round(result[0]/ (result[0] + result[1]), 2)# 0 - Count of imgs manual, 1 - done imgs
 
         intersection_act_step = intersection_from
         conf_act_step += conf_step
