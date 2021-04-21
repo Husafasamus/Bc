@@ -65,7 +65,7 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
     num_conf_steps = math.ceil(conf_dif / conf_step) + 1
     inters_dif = (intersection_to - intersection_from)
     num_inters_steps = math.ceil(inters_dif / conf_step) + 1
-
+    c_imgs = 0
     data = [[0 for j in range(num_inters_steps)] for i in range(num_conf_steps)]
     confidences = []
     intersections = []
@@ -87,7 +87,8 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
             result = DatasetMerger.compare_detections_n(dataset, confidence_treshold=conf_act_step,
                                                bbox_perc_intersection=intersection_act_step)
             intersection_act_step += intersection_step
-            data[index_conf_step][index_inters_step] = result[1] # 0 - Count of imgs manual, 1 - done imgs
+            data[index_conf_step][index_inters_step] = result[0] # 0 - Count of imgs manual, 1 - done imgs
+            c_imgs = result[0] + result[1]
 
         intersection_act_step = intersection_from
         conf_act_step += conf_step
@@ -119,7 +120,7 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
                          ha="center", va="center", color="w")
 
 
-    ax.set_title("Počet obrázkov potrebných manuálne anotovať\nv závislosti od confidence a intersection")
+    ax.set_title(f"Počet obrázkov potrebných manuálne anotovať\nz celk. počtu {c_imgs} v závislosti od confidence a intersection")
 
     fig.tight_layout()
 
