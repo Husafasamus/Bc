@@ -15,6 +15,7 @@ import pathlib
 from PIL import Image
 import time
 import statistics
+import math
 from dataset_merger.merging import DatasetMerger
 
 def plot_img_with_xywh(img: str, x: int, y: int, w: int, h: int) -> None:
@@ -57,12 +58,13 @@ def plot_img_with_bbox(img, bbox1: bbox.BBox) -> None:
 
 
 
-def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.5,
-                        conf_to=1, conf_step=0.1, intersection_from=0.5, intersection_to=1,intersection_step=0.1):
+def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
+                        conf_to=1, conf_step=0.1, intersection_from=0.4, intersection_to=1,intersection_step=0.1):
 
-
-    num_conf_steps = int(conf_to / conf_step)
-    num_inters_steps = int(intersection_to / intersection_step)
+    conf_dif = (conf_to - conf_from)
+    num_conf_steps = math.ceil(conf_dif / conf_step) + 1
+    inters_dif = (intersection_to - intersection_from)
+    num_inters_steps = math.ceil(inters_dif / conf_step) + 1
 
     data = [[0 for j in range(num_inters_steps)] for i in range(num_conf_steps)]
     confidences = []
@@ -105,8 +107,10 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.5,
     ax.set_yticklabels(confidences)
 
     # Rotate the tick labels and set their alignment.
-   # plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-    #         rotation_mode="anchor")
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+            rotation_mode="anchor")
+    plt.xlabel('Intersection')
+    plt.ylabel('Confidence')
 
     # Loop over data dimensions and create text annotations.
     for i in range(len(confidences)):
@@ -115,8 +119,10 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.5,
                          ha="center", va="center", color="w")
 
 
-    ax.set_title("závislosti confdence a intersection (2D heatmap)")
+    ax.set_title("Počet obrázkov potrebných manuálne anotovať\nv závislosti od confidence a intersection")
+
     fig.tight_layout()
+
     plt.show()
 
 
