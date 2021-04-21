@@ -36,7 +36,7 @@ class DatasetMerger:
 
 
     @staticmethod
-    def compare_detections_n(dataset: Dataset, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6) -> None:
+    def compare_detections_n(dataset: Dataset, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6) -> Tuple[int, int]:
         """
         Work: Load annotations from detections
         Note: Every object detector has its own directory with detections.json
@@ -97,6 +97,7 @@ class DatasetMerger:
 
         index_done = 0
 
+
         for index_img in range(len(detections_all['content'])):
             result = DatasetMerger.compare_annotations_in_img(detections_all['content'][index_img], confidence_treshold, difference_in_confidence, bbox_perc_intersection) # Result None as manual annotations or Annotations for successfull annotation
             if result is None:
@@ -114,19 +115,27 @@ class DatasetMerger:
 
         del detections_all
 
-        print('manual', imgs_manual)
-        print('done', imgs_done)
+       # print('manual', imgs_manual)
+        #print('done', imgs_done)
         manual_data = {'content': []}
-        done_data = {'content': []}
+
+
+
+        c_done = len(imgs_done['content'])
 
         for img_detection in imgs_manual:
             manual_data['content'].append(img_detection)
             pass
 
-        #DatasetMerger.file_write('detections.json', manual_data, indent=4)
-        DatasetMerger.file_write('detections.json', imgs_done, indent=4)
+        c_manual = len(manual_data['content'])
 
-        pass
+        DatasetMerger.file_write('detections_manual.json', manual_data, indent=4)
+        DatasetMerger.file_write('detections_completed.json', imgs_done, indent=4)
+
+        # Return Tuple[count_manual, count_done]
+        return (c_manual, c_done)
+
+
 
     @staticmethod
     def compare_annotations_in_img(img_detection: dict, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6) -> 'Annotations':
@@ -189,6 +198,9 @@ class DatasetMerger:
             del added
         #return successful_annotations
 
+        if len(successful_annotations_vehicles) == 0:
+            return None
+
         """
         Work: Compare LPNs
         Note: 
@@ -238,7 +250,7 @@ class DatasetMerger:
             for vehicle_detection in successful_annotations_vehicles:
                 bbox_vehicle = vehicle_detection.bbox
                 bbox_i = BBox.intersection(bbox_lpn, bbox_vehicle)
-                if bbox_i.capacity() / bbox_lpn.capacity() > 0.9:
+                if bbox_i.capacity() / bbox_lpn.capacity() > 0.9:   # Define number, which define us when the bounding boxe is in another
                     successful_annotations_vehicles.append(lpn_detection)
                     break
 

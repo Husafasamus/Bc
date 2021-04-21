@@ -1,18 +1,21 @@
 from dataset_merger import dataset as ds
 from dataset_merger import dataset_others as ods
 from dataset_merger import bbox
-#from dataset_merger.object_detector import *
-
 from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sns
+
 import numbers
 from typing import Optional
 import pathlib
 from PIL import Image
 import time
 import statistics
+from dataset_merger.merging import DatasetMerger
 
 def plot_img_with_xywh(img: str, x: int, y: int, w: int, h: int) -> None:
     fig, ax = plt.subplots(1)
@@ -26,7 +29,6 @@ def plot_img_with_xywh(img: str, x: int, y: int, w: int, h: int) -> None:
     # rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='b', facecolor='blue')
     ax.add_patch(rect)
     plt.show()
-
 def plot_img_with_bbox3(img, bbox1: bbox.BBox, bbox2: bbox.BBox, bbox3: bbox.BBox) -> None:
     x, y, w, h = bbox1.as_xywh()
     fig, ax = plt.subplots(1)
@@ -43,7 +45,6 @@ def plot_img_with_bbox3(img, bbox1: bbox.BBox, bbox2: bbox.BBox, bbox3: bbox.BBo
     rect = patches.Rectangle((x, y), w, h, linewidth=1, edgecolor='b', facecolor='blue')
     ax.add_patch(rect)
     plt.show()
-
 def plot_img_with_bbox(img, bbox1: bbox.BBox) -> None:
     x, y, w, h = bbox1.as_xywh()
     fig, ax = plt.subplots(1)
@@ -54,7 +55,72 @@ def plot_img_with_bbox(img, bbox1: bbox.BBox) -> None:
     plt.show()
 
 
-from dataset_merger.merging import DatasetMerger
+
+
+def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.5,
+                        conf_to=1, conf_step=0.1, intersection_from=0.5, intersection_to=1,intersection_step=0.1):
+
+
+    num_conf_steps = int(conf_to / conf_step)
+    num_inters_steps = int(intersection_to / intersection_step)
+
+    data = [[0 for j in range(num_inters_steps)] for i in range(num_conf_steps)]
+    confidences = []
+    intersections = []
+    tmp_inter_step = intersection_from
+    for innter_ann in range(num_inters_steps):
+        intersections.append(round(tmp_inter_step, 2))
+        tmp_inter_step += intersection_step
+
+    del tmp_inter_step
+
+
+    conf_act_step = conf_from
+    intersection_act_step = intersection_from
+
+    # Confidence
+    for index_conf_step in range(num_conf_steps):
+        confidences.append(round(conf_act_step, 2))
+        for index_inters_step in range(num_inters_steps):
+            result = DatasetMerger.compare_detections_n(dataset, confidence_treshold=conf_act_step,
+                                               bbox_perc_intersection=intersection_act_step)
+            intersection_act_step += intersection_step
+            data[index_conf_step][index_inters_step] = result[1] # 0 - Count of imgs manual, 1 - done imgs
+
+        intersection_act_step = intersection_from
+        conf_act_step += conf_step
+
+
+    data_np = np.array(data)
+
+    # Create 2D - Heat map
+    fig, ax = plt.subplots()
+    im = ax.imshow(data_np)
+
+    # We want to show all ticks...
+    ax.set_xticks(np.arange(len(intersections)))
+    ax.set_yticks(np.arange(len(confidences)))
+    # ... and label them with the respective list entries
+    ax.set_xticklabels(intersections)
+    ax.set_yticklabels(confidences)
+
+    # Rotate the tick labels and set their alignment.
+   # plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
+    #         rotation_mode="anchor")
+
+    # Loop over data dimensions and create text annotations.
+    for i in range(len(confidences)):
+        for j in range(len(intersections)):
+            text = ax.text(j, i, data_np[i, j],
+                         ha="center", va="center", color="w")
+
+
+    ax.set_title("závislosti confdence a intersection (2D heatmap)")
+    fig.tight_layout()
+    plt.show()
+
+
+
 
 
 def main() -> int:
@@ -71,7 +137,10 @@ def main() -> int:
     d.find_images()
     #print(bbox.BBox(1,2,10,10).capacity())
 
-    DatasetMerger.compare_detections_n(d, bbox_perc_intersection=0.8)
+    compute_2D_heat_map(d)
+
+
+    #DatasetMerger.compare_detections_n(d, bbox_perc_intersection=0.8)
     #DatasetMerger.compare_detections(d)
 
     #ObjectDetector.yolov3_vehicle_detector(d)
