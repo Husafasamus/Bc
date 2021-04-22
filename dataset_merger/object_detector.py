@@ -6,7 +6,7 @@ from dataset_merger.dataset import *
 from object_detectors.yolov3 import *
 from object_detectors.yolov3  import detect
 from dataset_merger.merging import DatasetMerger
-
+from object_detectors.faster_rcnn import detect_img as rcnn
 
 class Annotation:
 
@@ -52,15 +52,26 @@ class ObjectDetector:
         annos = detect.detect_vehicles_in_dataset(dataset.path)
 
         annos = DatasetMerger.create_dict_from_annotations_detected(dataset, annos)
-        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('yolov3').joinpath('detections.json'), annos, 4)
-
-
+        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('yolov3').joinpath('detections.json'),
+                                 annos, 4)
         pass
 
     @staticmethod
     def yolov3_LPN_detector(dataset: Dataset):
         print('Yolov3 LPN detector.')
         ObjectDetector.create_files(dataset, 'yolov3')
+        pass
+
+    @staticmethod
+    def faster_rcnn_vehicle_detector(dataset: Dataset, conf_thres=0.8):
+        print('Faster R-CNN mobilnetv3 detector.')
+        ObjectDetector.create_files(dataset, 'faster_rcnn')
+
+        annos = rcnn.FasterRCNNMobilnetv3.detect_vehicles_in_dataset(dataset.imgs_path, conf_thres)
+        annos = DatasetMerger.create_dict_from_annotations_detected(dataset, annos)
+        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('faster_rcnn').joinpath('detections.json'),
+                                 annos, 4)
+
         pass
 
     @staticmethod

@@ -34,7 +34,6 @@ class DatasetMerger:
         self.destination_path.joinpath('annotations').mkdir(exist_ok=True)  # dir
         self.create_wsi(self.wsi_path)  # csv
 
-
     @staticmethod
     def compare_detections_n(dataset: Dataset, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6) -> Tuple[int, int]:
         """
@@ -134,8 +133,6 @@ class DatasetMerger:
 
         # Return Tuple[count_manual, count_done]
         return (c_manual, c_done)
-
-
 
     @staticmethod
     def compare_annotations_in_img(img_detection: dict, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6) -> 'Annotations':
@@ -256,10 +253,6 @@ class DatasetMerger:
                         break
 
         return successful_annotations_vehicles
-
-
-
-
 
     @staticmethod
     def compare_two_annotations(annotation1: dict, annotation2: dict, confidence_treshold=0.8, difference_in_confidence=0.05, bbox_perc_intersection=0.6):

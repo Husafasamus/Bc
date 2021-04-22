@@ -17,6 +17,8 @@ import time
 import statistics
 import math
 from dataset_merger.merging import DatasetMerger
+from dataset_merger.object_detector import ObjectDetector
+
 
 def plot_img_with_xywh(img: str, x: int, y: int, w: int, h: int) -> None:
     fig, ax = plt.subplots(1)
@@ -147,13 +149,12 @@ def main() -> int:
     d.find_images()
     #print(bbox.BBox(1,2,10,10).capacity())
 
-    compute_2D_heat_map(d)
 
-
+    #compute_2D_heat_map(d)
     #DatasetMerger.compare_detections_n(d, bbox_perc_intersection=0.8)
     #DatasetMerger.compare_detections(d)
 
-    #ObjectDetector.yolov3_vehicle_detector(d)
+    ObjectDetector.faster_rcnn_vehicle_detector(d)
     #ObjectDetector.SSD_vehicle_detector(d)
 
 
