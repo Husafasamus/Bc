@@ -169,7 +169,7 @@ class DatasetMerger:
             if vehicles[0]['confidence'] >  confidence_treshold:
                 bbox_ = BBox(vehicles[0]['bbox']['x'], vehicles[0]['bbox']['y'], vehicles[0]['bbox']['width'],
                               vehicles[0]['bbox']['height'])
-                successful_annotations_vehicles.append(object_detector.Annotation(bbox_, vehicles[0]['label'], vehicles[0]['confidence']))
+                successful_annotations_vehicles.append(object_detector.Annotation(bbox_, vehicles[0]['confidence'], vehicles[0]['label']))
             else:
                 return None
         else:
@@ -209,7 +209,7 @@ class DatasetMerger:
             if lpns[0]['confidence'] >  confidence_treshold:
                 bbox_ = BBox(lpns[0]['bbox']['x'], lpns[0]['bbox']['y'], lpns[0]['bbox']['width'],
                               lpns[0]['bbox']['height'])
-                successful_annotations_lpns.append(object_detector.Annotation(bbox_, lpns[0]['label'], lpns[0]['confidence']))
+                successful_annotations_lpns.append(object_detector.Annotation(bbox_, lpns[0]['confidence'], lpns[0]['label']))
         else:
             for x, y in itertools.combinations(range(len(lpns)), 2):
                 if not x in added:

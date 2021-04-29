@@ -4,7 +4,8 @@ from dataset_merger.bbox import BBox
 from typing import Iterable
 from dataset_merger.dataset import *
 from object_detectors.yolov3 import *
-from object_detectors.yolov3  import detect
+import object_detectors.yolov3.detect as yolo
+import object_detectors.ssd.detect as ssd
 from dataset_merger.merging import DatasetMerger
 from object_detectors.faster_rcnn import detect_img as rcnn
 
@@ -48,48 +49,42 @@ class ObjectDetector:
     @staticmethod
     def yolov3_vehicle_detector(dataset: Dataset):
         print('Yolov3 vehicle detector.')
-        ObjectDetector.create_files(dataset, 'yolov3')
-        annos = detect.detect_vehicles_in_dataset(dataset.path)
-
+        ObjectDetector.create_files(dataset, 'yolov3-vehicles')
+        annos = yolo.YoloV3.detect_vehicles_in_dataset(dataset.path)
         annos = DatasetMerger.create_dict_from_annotations_detected(dataset, annos)
-        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('yolov3').joinpath('detections.json'),
+        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('yolov3-vehicles').joinpath('detections.json'),
                                  annos, 4)
         pass
 
     @staticmethod
     def yolov3_LPN_detector(dataset: Dataset):
         print('Yolov3 LPN detector.')
-        ObjectDetector.create_files(dataset, 'yolov3')
-        pass
+        ObjectDetector.create_files(dataset, 'yolov3-lpns')
+        annos = yolo.YoloV3.detect_LPN_in_dataset(dataset.path)
 
-    @staticmethod
-    def faster_rcnn_vehicle_detector(dataset: Dataset, conf_thres=0.8):
-        print('Faster R-CNN mobilnetv3 detector.')
-        ObjectDetector.create_files(dataset, 'faster_rcnn')
-
-        annos = rcnn.FasterRCNNMobilnetv3.detect_vehicles_in_dataset(dataset.imgs_path, conf_thres)
         annos = DatasetMerger.create_dict_from_annotations_detected(dataset, annos)
-        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('faster_rcnn').joinpath('detections.json'),
-                                 annos, 4)
-
+        DatasetMerger.file_write(
+            dataset.path.joinpath('Our_detections').joinpath('yolov3-lpns').joinpath('detections.json'),
+            annos, 4)
         pass
 
     @staticmethod
     def SSD_vehicle_detector(dataset: Dataset):
         print('SSD vehicle detector.')
-        ObjectDetector.create_files(dataset, 'ssd')
-        annos = SSD300()
-        annos = annos.start(dataset.imgs_path, 0.8)
+        ObjectDetector.create_files(dataset, 'ssd-vehicles')
+        annos = ssd.SSD.detect_vehicles_in_dataset(dataset.imgs_path)
         annos = DatasetMerger.create_dict_from_annotations_detected(dataset, annos)
-
-        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('ssd').joinpath('detections.json'), annos, 4)
-        pass
+        DatasetMerger.file_write(dataset.path.joinpath('Our_detections').joinpath('ssd-vehicles').joinpath('detections.json'), annos, 4)
+        print('SSD detecting finished.')
 
     @staticmethod
     def SSD_LPN_detector(dataset: Dataset):
-        print('SSD LPN detector.')
-        ObjectDetector.create_files(dataset, 'ssd')
-
+        print('SSD lpn detector.')
+        ObjectDetector.create_files(dataset, 'ssd-lpns')
+        annos = ssd.SSD.detect_LPN_in_dataset(dataset.imgs_path)
+        annos = DatasetMerger.create_dict_from_annotations_detected(dataset, annos)
+        DatasetMerger.file_write(
+            dataset.path.joinpath('Our_detections').joinpath('ssd-lpns').joinpath('detections.json'), annos, 4)
 
         pass
 

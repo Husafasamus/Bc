@@ -132,6 +132,52 @@ def compute_2D_heat_map(dataset: ds.Dataset=0, conf_from=0.3,
 
     plt.show()
 
+def count_annotations(dataset: ds.Dataset):
+    annotations = dataset.get_labels()
+
+    # Total_information in dataset
+    c_car = 0
+    c_motorcycle = 0
+    c_lpn = 0
+    c_truck = 0
+    c_bus = 0
+
+    for img_detections in annotations:
+        for annotations in img_detections:
+            if annotations.label == 'car':
+                c_car += 1
+            elif annotations.label == 'motorcycle':
+                c_motorcycle += 1
+            elif annotations.label == 'truck':
+                c_truck += 1
+            elif annotations.label == 'bus':
+                c_bus += 1
+            elif annotations.label ==  'license_plate':
+                c_lpn += 1
+
+    print(dataset.name, 'Cars: ', c_car, 'Motorcycles: ', c_motorcycle, 'LPN: ', c_lpn, 'Trucks: ', c_truck, 'Buses: ', c_bus)
+
+
+def count_annotations_1(dataset):
+    c_car = 0
+    c_motorcycle = 0
+    c_lpn = 0
+    c_truck = 0
+    c_bus = 0
+    for x in dataset.get_labels()['content']:
+        for y in x['annotations']:
+            if y['label'] == 'car':
+                c_car += 1
+            elif y['label'] == 'motorcycle':
+                c_motorcycle += 1
+            elif y['label'] == 'truck':
+                c_truck += 1
+            elif y['label'] == 'bus':
+                c_bus += 1
+            elif y['label'] == 'license_plate':
+                c_lpn += 1
+    print(dataset.name, 'Cars: ', c_car, 'Motorcycles: ', c_motorcycle, 'LPN: ', c_lpn, 'Trucks: ', c_truck, 'Buses: ', c_bus, 'Count: ', c_car + c_lpn + c_motorcycle + c_bus + c_truck)
+    #print(annotations[0][1].label)
 
 
 
@@ -145,16 +191,47 @@ def main() -> int:
     #merger.split_train_test_validation()
     #t1 = time.time() - t0
 
-    d = ds.FakeDataset2(r'D:\bakalarkaaaa\Datasets\Fake_dataset_2')
-    d.find_images()
+    #d = ds.FakeDataset2(r'D:\bakalarkaaaa\Datasets\Fake_dataset_2')
+    #d.find_images()
+
+    #ds1 = ods.UFPRALPRDataset(r"D:\Downloads\UFPR-ALPR dataset")
+    #ds1.find_images()
+
+    #
+    cars_dataset = ods.CarsDataset(r"D:\Downloads\car_ims\car_ims")
+    #cars_dataset.find_images()
+
+
+    #spz = ods.SPZdataset(r"D:\Downloads\SPZdataset")
+    #spz.find_images()
+    #spz.get_labels()
+    ObjectDetector.yolov3_LPN_detector(cars_dataset)
+
+    #car_license_plates = ods.CarLicensePlates(r'D:\Downloads\Cars_license_plates')
+    #car_license_plates.find_images()
+
+    #car_license_plates.get_labels()
+    #count_annotations_1(spz)
+    #DatasetMerger.compare_detections_n(car_license_plates, confidence_treshold=0.9)
+
+    #ObjectDetector.SSD_vehicle_detector(car_license_plates)
+    #ObjectDetector.yolov3_vehicle_detector(car_license_plates)
+
+    #ObjectDetector.SSD_LPN_detector(d)
+    #ObjectDetector.yolov3_LPN_detector(d)
+    #ObjectDetector.
+    #ObjectDetector.SSD_vehicle_detector(d)
     #print(bbox.BBox(1,2,10,10).capacity())
 
+    #dataset = ods.ArtificialMercosurLicensePlates(r"D:\Downloads\nx9xbs4rgx-2")
+    #dataset.find_images()
+    #count_annotations_1(dataset)
 
     #compute_2D_heat_map(d)
-    #DatasetMerger.compare_detections_n(d, bbox_perc_intersection=0.8)
+    #DatasetMerger.compare_detections_n(d, confidence_treshold=0.9,bbox_perc_intersection=0.4)
     #DatasetMerger.compare_detections(d)
 
-    ObjectDetector.faster_rcnn_vehicle_detector(d)
+    #ObjectDetector.faster_rcnn_vehicle_detector(d)
     #ObjectDetector.SSD_vehicle_detector(d)
 
 
