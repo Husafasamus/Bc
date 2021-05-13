@@ -8,10 +8,9 @@ from matplotlib import pyplot as plt
 images_path_dir       = Path(r'D:\Vehicles_with_lpns_dataset\images')
 annotations_path_file = Path(r'D:\Vehicles_with_lpns_dataset\annotations\detections.json')
 
-# TODO Rozdelenia confidences historgram, aku distribuciu ma dataset
 def confidences_histogram() -> None:
-    plt.style.use('fivethirtyeight')
     confidences = []
+    #plt.style.use('fivethirtyeight')
 
     with open(annotations_path_file) as detetections:
         images = json.load(detetections)
@@ -30,9 +29,9 @@ def confidences_histogram() -> None:
     plt.tight_layout()
     plt.show()
 
-# TODO Velkosti obrazkov histogram, aspect ratio
 def aspect_ratio_images_histogram():
     aspect_ratio_images = []
+    #plt.style.use('fivethirtyeight')
 
     for img_path in images_path_dir.iterdir():
         # image w, h
@@ -50,11 +49,8 @@ def aspect_ratio_images_histogram():
     plt.tight_layout()
     plt.show()
 
-    pass
-
-# TODO BBOX / obsah obrazkov histogram
 def bboxes_area_in_image_histogram():
-    plt.style.use('fivethirtyeight')
+    #plt.style.use('fivethirtyeight')
     all_bboxes_area_img = []
 
     with open(annotations_path_file) as detetections:
@@ -75,7 +71,7 @@ def bboxes_area_in_image_histogram():
     bins = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
     plt.hist(all_bboxes_area_img, bins=bins, edgecolor='black')
 
-    plt.title('Areas of bboxes')
+    plt.title('Object coverage')
     plt.xlabel('BBox_area / Img_area')
     plt.ylabel('Total bboxes')
 
@@ -98,12 +94,13 @@ def get_annotations(img, annotations):
 def main():
     #confidences_histogram()
     #bboxes_area_in_image_histogram()
-    #aspect_ratio_images_histogram()
+    aspect_ratio_images_histogram()
 
     return 0
 
 if __name__ == "__main__":
     print('Roztrhaj to!')
+
     sys.exit(main())
 
 
